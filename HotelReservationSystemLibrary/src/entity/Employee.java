@@ -4,7 +4,9 @@
  */
 package entity;
 
+import Enum.EmployeeEnum;
 import java.io.Serializable;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -21,16 +23,21 @@ public class Employee implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long employeeId;
+    @Column(length = 32, nullable = false) 
     private String password;
+    @Column(length = 32, nullable = false, unique = true) 
     private String employeeName;
+    private EmployeeEnum employeeEnum;
 
     public Employee() {
     }
 
-    public Employee(String employeeName, String password) {
+    public Employee(String password, String employeeName, EmployeeEnum employeeEnum) {
         this.password = password;
         this.employeeName = employeeName;
+        this.employeeEnum = employeeEnum;
     }
+    
 /**
      * @return the employeeName
      */
@@ -89,6 +96,20 @@ public class Employee implements Serializable {
     @Override
     public String toString() {
         return "entity.Employee[ id=" + employeeId + " ]";
+    }
+
+    /**
+     * @return the employeeEnum
+     */
+    public EmployeeEnum getEmployeeEnum() {
+        return employeeEnum;
+    }
+
+    /**
+     * @param employeeEnum the employeeEnum to set
+     */
+    public void setEmployeeEnum(EmployeeEnum employeeEnum) {
+        this.employeeEnum = employeeEnum;
     }
     
 }
