@@ -3,6 +3,8 @@
   <persistence-unit name="HotelReservationSystem-ejbPU" transaction-type="JTA">
     <jta-data-source>jdbc/hotelReservationSystem</jta-data-source>
     <class>entity.Employee</class>
+    <class>entity.Partner</class>
+    <class>entity.RoomType</class>
     <exclude-unlisted-classes>true</exclude-unlisted-classes>
     <properties>
       <property name="javax.persistence.schema-generation.database.action" value="create"/>
