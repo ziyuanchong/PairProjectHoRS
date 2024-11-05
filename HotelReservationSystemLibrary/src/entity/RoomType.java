@@ -6,11 +6,17 @@ package entity;
 
 import Enum.RoomTypeEnum;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 
 /**
  *
@@ -33,6 +39,13 @@ public class RoomType implements Serializable {
     private int capacity;
     @Column(length = 1000) //Should amenities be a list of string?
     private String amenities;
+    @Enumerated(EnumType.STRING)
+    private RoomTypeEnum roomType;
+    @OneToMany(mappedBy = "roomType", cascade = CascadeType.ALL)
+    private List<Reservation> reservations = new ArrayList<>();
+    @OneToMany(mappedBy = "roomType")
+    private List<Room> rooms = new ArrayList<>();
+    
 
     public RoomType(String name, String description, double size, String bed, int capacity, String amenities) {
         this.name = name;
@@ -53,6 +66,24 @@ public class RoomType implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
+
+    public RoomTypeEnum getRoomType() {
+        return roomType;
+    }
+
+    public void setRoomType(RoomTypeEnum roomType) {
+        this.roomType = roomType;
+    }
+
+    public List<Reservation> getReservations() {
+        return reservations;
+    }
+
+    public void setReservations(List<Reservation> reservations) {
+        this.reservations = reservations;
+    }
+    
+    
 
     @Override
     public int hashCode() {
@@ -167,14 +198,14 @@ public class RoomType implements Serializable {
      * @return the roomTypeEnum
      */
     public RoomTypeEnum getRoomTypeEnum() {
-        return roomTypeEnum;
+        return roomType;
     }
 
     /**
      * @param roomTypeEnum the roomTypeEnum to set
      */
-    public void setRoomTypeEnum(RoomTypeEnum roomTypeEnum) {
-        this.roomTypeEnum = roomTypeEnum;
+    public void setRoomTypeEnum(RoomTypeEnum roomType) {
+        this.roomType = roomType;
     }
 
     /**
