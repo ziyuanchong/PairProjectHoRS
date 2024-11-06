@@ -36,8 +36,13 @@ public class EmployeeSessionBean implements EmployeeSessionBeanRemote, EmployeeS
         return query.getResultList();
     }
     
-    
-    
+    public Employee login(String employeeName, String password) {
+        Employee employee = em.createQuery("SELECT e FROM Employee e WHERE e.employeeName = :employeeName AND e.password = :password", Employee.class)
+                .setParameter("employeeName", employeeName)
+                .setParameter("password" , password)
+                .getSingleResult();
+        return employee;
+    }
     // Add business logic below. (Right-click in editor and choose
     // "Insert Code > Add Business Method")
 }

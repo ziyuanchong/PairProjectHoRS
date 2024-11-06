@@ -4,7 +4,6 @@
  */
 package entity;
 
-import Enum.RoomTypeEnum;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,21 +38,22 @@ public class RoomType implements Serializable {
     private int capacity;
     @Column(length = 1000) //Should amenities be a list of string?
     private String amenities;
-    @Enumerated(EnumType.STRING)
-    private RoomTypeEnum roomType;
+    private boolean available;
     @OneToMany(mappedBy = "roomType", cascade = CascadeType.ALL)
     private List<Reservation> reservations = new ArrayList<>();
     @OneToMany(mappedBy = "roomType")
     private List<Room> rooms = new ArrayList<>();
-    
+    @OneToMany(mappedBy = "roomType")
+    private List<RoomRate> roomRates;
 
-    public RoomType(String name, String description, double size, String bed, int capacity, String amenities) {
+    public RoomType(String name, String description, double size, String bed, int capacity, String amenities, boolean available) {
         this.name = name;
         this.description = description;
         this.size = size;
         this.bed = bed;
         this.capacity = capacity;
         this.amenities = amenities;
+        this.available = available;
     }
 
     public RoomType() {
@@ -65,14 +65,6 @@ public class RoomType implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public RoomTypeEnum getRoomType() {
-        return roomType;
-    }
-
-    public void setRoomType(RoomTypeEnum roomType) {
-        this.roomType = roomType;
     }
 
     public List<Reservation> getReservations() {
@@ -195,20 +187,6 @@ public class RoomType implements Serializable {
     }
 
     /**
-     * @return the roomTypeEnum
-     */
-    public RoomTypeEnum getRoomTypeEnum() {
-        return roomType;
-    }
-
-    /**
-     * @param roomTypeEnum the roomTypeEnum to set
-     */
-    public void setRoomTypeEnum(RoomTypeEnum roomType) {
-        this.roomType = roomType;
-    }
-
-    /**
      * @return the size
      */
     public double getSize() {
@@ -220,6 +198,48 @@ public class RoomType implements Serializable {
      */
     public void setSize(double size) {
         this.size = size;
+    }
+
+    /**
+     * @return the rooms
+     */
+    public List<Room> getRooms() {
+        return rooms;
+    }
+
+    /**
+     * @param rooms the rooms to set
+     */
+    public void setRooms(List<Room> rooms) {
+        this.rooms = rooms;
+    }
+
+    /**
+     * @return the available
+     */
+    public boolean isAvailable() {
+        return available;
+    }
+
+    /**
+     * @param available the available to set
+     */
+    public void setAvailable(boolean available) {
+        this.available = available;
+    }
+
+    /**
+     * @return the roomRates
+     */
+    public List<RoomRate> getRoomRates() {
+        return roomRates;
+    }
+
+    /**
+     * @param roomRates the roomRates to set
+     */
+    public void setRoomRates(List<RoomRate> roomRates) {
+        this.roomRates = roomRates;
     }
     
 }

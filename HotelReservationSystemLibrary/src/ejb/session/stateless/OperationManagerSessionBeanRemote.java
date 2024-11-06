@@ -5,6 +5,7 @@
 package ejb.session.stateless;
 
 import Enum.RoomTypeEnum;
+import entity.Room;
 import entity.RoomType;
 import java.util.List;
 import javax.ejb.Remote;
@@ -16,10 +17,27 @@ import javax.ejb.Remote;
 @Remote
 public interface OperationManagerSessionBeanRemote {
 
-    public RoomType createRoomType(String name, String description, double size, String bed, int capacity, String amenities);
+    public RoomType createRoomType(String name, String description, double size, String bed, int capacity, String amenities, boolean available);
 
-    public List<RoomType> retrieveListOfRoomTypes();
+    public RoomType viewRoomTypeDetails(String name);
 
     public void deleteRoomType(String name);
+
+    public RoomType updateRoomType(RoomType updatedRoomType);
+    
+    public RoomType updateRoomType(String name, String description, double size, String bed, int capacity, String amenities, boolean available);
+            
+
+    public List<RoomType> retrieveListOfRoomTypes();
+    
+    public Room createNewRoom(String roomNumber, String roomStatus);
+    
+    public Room updateRoom(Long roomId, String roomNumber, String roomStatus);
+    
+    public Room updateRoom(Room updatedRoom);
+    
+    public void deleteRoom(Long roomId);
+    
+    public List<Room> viewAllRooms();
     
 }

@@ -37,6 +37,14 @@ public class ReservationRoom implements Serializable {
         return reservationRoomId;
     }
 
+    public ReservationRoom() {
+    }
+
+    public ReservationRoom(Room room, Reservation reservation) {
+        this.room = room;
+        this.reservation = reservation;
+    }
+
     public void setReservationRoomId(Long reservationRoomId) {
         this.reservationRoomId = reservationRoomId;
     }
@@ -64,6 +72,34 @@ public class ReservationRoom implements Serializable {
     @Override
     public String toString() {
         return "entity.ReservationRoom[ id=" + reservationRoomId + " ]";
+    }
+
+    /**
+     * @return the room
+     */
+    public Room getRoom() {
+        return room;
+    }
+
+    /**
+     * @param room the room to set
+     */
+    public void setRoom(Room room) {
+        this.room = room;
+    }
+
+    /**
+     * @return the reservation
+     */
+    public Reservation getReservation() {
+        return reservation;
+    }
+
+    /**
+     * @param reservation the reservation to set
+     */
+    public void setReservation(Reservation reservation) {
+        this.reservation = reservation;
     }
     
 }
