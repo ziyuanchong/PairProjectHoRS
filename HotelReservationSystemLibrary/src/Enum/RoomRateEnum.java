@@ -8,10 +8,9 @@ package Enum;
  *
  * @author Witt
  */
-public enum RoomTypeEnum {
-    DELUXE,
-    PREMIER,
-    FAMILY,
-    JUNIOR,
-    GRAND
+public enum RoomRateEnum {
+    PUBLISHED,
+    NORMAL,
+    PEAK,
+    PROMOTION
 }

@@ -32,9 +32,9 @@ public class Employee implements Serializable {
     public Employee() {
     }
 
-    public Employee(String password, String employeeName, EmployeeEnum employeeEnum) {
-        this.password = password;
+    public Employee(String employeeName, String password, EmployeeEnum employeeEnum) {
         this.employeeName = employeeName;
+        this.password = password;
         this.employeeEnum = employeeEnum;
     }
     
