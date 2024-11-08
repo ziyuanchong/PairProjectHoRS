@@ -30,7 +30,7 @@ public class Room implements Serializable {
     private String roomNumber;
 
     @Column(nullable = false)
-    private String roomStatus;
+    private boolean isAvailable;
     
     @ManyToOne
     @JoinColumn(name = "roomTypeId", nullable = false)
@@ -42,10 +42,26 @@ public class Room implements Serializable {
     public Room() {
     }
 
-    public Room(String roomNumber, String roomStatus) {
+    public Room(String roomNumber, boolean isAvailable) {
         this.roomNumber = roomNumber;
-        this.roomStatus = roomStatus;
+        this.isAvailable = isAvailable;
     }
+
+    public Room(String roomNumber, boolean isAvailable, RoomType roomType) {
+        this.roomNumber = roomNumber;
+        this.isAvailable = isAvailable;
+        this.roomType = roomType;
+    }
+
+    public List<ReservationRoom> getReservationRooms() {
+        return reservationRooms;
+    }
+
+    public void setReservationRooms(List<ReservationRoom> reservationRooms) {
+        this.reservationRooms = reservationRooms;
+    }
+    
+    
 
     public String getRoomNumber() {
         return roomNumber;
@@ -55,12 +71,12 @@ public class Room implements Serializable {
         this.roomNumber = roomNumber;
     }
 
-    public String getRoomStatus() {
-        return roomStatus;
+    public boolean getIsAvailable() {
+        return isAvailable;
     }
 
-    public void setRoomStatus(String roomStatus) {
-        this.roomStatus = roomStatus;
+    public void setIsAvailable(boolean isAvailable) {
+        this.isAvailable = isAvailable;
     }
 
     public RoomType getRoomType() {

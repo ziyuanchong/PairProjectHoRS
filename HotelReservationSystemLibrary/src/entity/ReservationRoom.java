@@ -12,6 +12,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 
 /**
  *
@@ -32,6 +33,44 @@ public class ReservationRoom implements Serializable {
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(nullable = false)
     private Reservation reservation;
+    
+    @OneToOne(mappedBy = "reservationRoom, cascade = CascadeType.ALL, orphanRemoval = true")
+    private ExceptionAllocationReport exceptionAllocationReport;
+
+    public ReservationRoom(Room room, Reservation reservation, ExceptionAllocationReport exceptionAllocationReport) {
+        this.room = room;
+        this.reservation = reservation;
+        this.exceptionAllocationReport = exceptionAllocationReport;
+    }
+
+    public ReservationRoom() {
+    }
+
+    public Room getRoom() {
+        return room;
+    }
+
+    public void setRoom(Room room) {
+        this.room = room;
+    }
+
+    public Reservation getReservation() {
+        return reservation;
+    }
+
+    public void setReservation(Reservation reservation) {
+        this.reservation = reservation;
+    }
+
+    public ExceptionAllocationReport getExceptionAllocationReport() {
+        return exceptionAllocationReport;
+    }
+
+    public void setExceptionAllocationReport(ExceptionAllocationReport exceptionAllocationReport) {
+        this.exceptionAllocationReport = exceptionAllocationReport;
+    }
+    
+    
 
     public Long getReservationRoomId() {
         return reservationRoomId;
