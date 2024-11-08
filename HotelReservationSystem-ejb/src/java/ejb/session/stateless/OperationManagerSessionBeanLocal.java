@@ -6,6 +6,7 @@ package ejb.session.stateless;
 
 import Enum.RoomTypeEnum;
 import entity.ExceptionAllocationReport;
+
 import entity.Room;
 import entity.RoomType;
 import exception.RoomNotFoundException;
@@ -20,10 +21,12 @@ import javax.ejb.Local;
 @Local
 public interface OperationManagerSessionBeanLocal {
 
-    public RoomType createRoomType(String name, String description, double size, String bed, int capacity, List<String> amenities, RoomTypeEnum roomTypeEnum);
+    public RoomType createRoomType(String name, String description, double size, String bed, int capacity, List<String> amenities, RoomTypeEnum roomTypeEnum, boolean available);
+
 
     public void deleteRoomType(String name) throws RoomTypeNotFoundException;
 
+    public RoomType viewRoomTypeDetails(String name) throws RoomTypeNotFoundException;
     public List<RoomType> retrieveListOfRoomTypes();
 
     public RoomType updateRoomType(RoomType updatedRoomType) throws RoomTypeNotFoundException;
@@ -37,4 +40,5 @@ public interface OperationManagerSessionBeanLocal {
     public List<Room> retrieveAllRooms();
 
     public ExceptionAllocationReport generateRoomAllocationExceptionReport(String roomTypeRequested, Long reservationRoomId) throws RoomNotFoundException;
+
 }

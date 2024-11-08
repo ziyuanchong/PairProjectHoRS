@@ -4,10 +4,12 @@
  */
 package ejb.session.stateless;
 
+
 import Enum.AllocationExceptionTypeEnum;
 import Enum.RoomTypeEnum;
 import entity.ExceptionAllocationReport;
 import entity.ReservationRoom;
+
 import entity.Room;
 import entity.RoomType;
 import exception.RoomNotFoundException;
@@ -30,12 +32,14 @@ public class OperationManagerSessionBean implements OperationManagerSessionBeanR
     private EntityManager em;
 
     @Override
-    public RoomType createRoomType(String name, String description, double size, String bed, int capacity, List<String> amenities, RoomTypeEnum roomTypeEnum) {
-        RoomType newRoomType = new RoomType(name, description, size, bed, capacity, amenities, roomTypeEnum);
+    public RoomType createRoomType(String name, String description, double size, String bed, int capacity, List<String> amenities, RoomTypeEnum roomTypeEnum, boolean available) {
+        RoomType newRoomType = new RoomType(name, description, size, bed, capacity, amenities, roomTypeEnum, available);
+
         em.persist(newRoomType);
         return newRoomType;
     }
 
+    @Override
     public RoomType viewRoomTypeDetails(String name) throws RoomTypeNotFoundException {
         try {
             RoomType chosenRoomType = em.createQuery(
@@ -47,6 +51,7 @@ public class OperationManagerSessionBean implements OperationManagerSessionBeanR
             throw new RoomTypeNotFoundException("Room type with name " + name + " does not exist.");
         }
     }
+
 
     @Override
     public void deleteRoomType(String name) throws RoomTypeNotFoundException {
@@ -60,6 +65,7 @@ public class OperationManagerSessionBean implements OperationManagerSessionBeanR
             throw new RoomTypeNotFoundException("Room type with name " + name + " does not exist.");
         } catch (IllegalArgumentException ex) {
             throw new IllegalStateException("Error occurred while attempting to delete room type.", ex);
+
         }
     }
 
@@ -71,6 +77,8 @@ public class OperationManagerSessionBean implements OperationManagerSessionBeanR
         }
 
         // Update fields
+
+
         existingRoomType.setName(updatedRoomType.getName());
         existingRoomType.setDescription(updatedRoomType.getDescription());
         existingRoomType.setSize(updatedRoomType.getSize());
@@ -80,6 +88,7 @@ public class OperationManagerSessionBean implements OperationManagerSessionBeanR
 
         return existingRoomType;
     }
+            
 
     @Override
     public List<RoomType> retrieveListOfRoomTypes() {
@@ -215,5 +224,6 @@ public class OperationManagerSessionBean implements OperationManagerSessionBeanR
         } catch (NoResultException ex) {
             return false; // No upgrade available
         }
+
     }
 }

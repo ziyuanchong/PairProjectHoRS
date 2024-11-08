@@ -9,6 +9,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 import javax.persistence.Column;
+
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -22,7 +23,11 @@ import javax.persistence.TemporalType;
 
 /**
  *
+<<<<<<< HEAD
  * @author ziyuanchong
+=======
+ * @author Witt
+>>>>>>> origin/main
  */
 @Entity
 public class RoomRate implements Serializable {
@@ -51,6 +56,7 @@ public class RoomRate implements Serializable {
     @ManyToOne(optional = false)
     @JoinColumn(name = "roomTypeId", nullable = false)
     private RoomType roomType;
+
 
     public RoomRate() {
     }
@@ -113,6 +119,7 @@ public class RoomRate implements Serializable {
     }
 
     
+
     public Long getRoomRateId() {
         return roomRateId;
     }
@@ -146,4 +153,5 @@ public class RoomRate implements Serializable {
         return "entity.RoomRate[ id=" + roomRateId + " ]";
     }
     
+
 }

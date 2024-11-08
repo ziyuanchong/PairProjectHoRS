@@ -18,7 +18,11 @@ import javax.persistence.PersistenceContext;
 
 /**
  *
+<<<<<<< HEAD
  * @author ziyuanchong
+=======
+ * @author Witt
+>>>>>>> origin/main
  */
 @Stateless
 public class SalesManagerSessionBean implements SalesManagerSessionBeanRemote, SalesManagerSessionBeanLocal {
@@ -26,6 +30,7 @@ public class SalesManagerSessionBean implements SalesManagerSessionBeanRemote, S
     @PersistenceContext(unitName = "HotelReservationSystem-ejbPU")
     private EntityManager em;
 
+    @Override
     public RoomRate createRoomRate(String name, RoomRateTypeEnum rateType, BigDecimal ratePerNight, Date startDate, Date endDate, Long roomTypeId)
             throws RoomTypeNotFoundException {
         RoomType roomType = em.find(RoomType.class, roomTypeId);
@@ -46,6 +51,7 @@ public class SalesManagerSessionBean implements SalesManagerSessionBeanRemote, S
         return roomRate;
     }
 
+    @Override
     public RoomRate updateRoomRate(Long rateId, String name, RoomRateTypeEnum rateType, BigDecimal ratePerNight, Date startDate, Date endDate, Long roomTypeId)
             throws RoomRateNotFoundException, RoomTypeNotFoundException {
         RoomRate roomRate = em.find(RoomRate.class, rateId);
@@ -68,6 +74,7 @@ public class SalesManagerSessionBean implements SalesManagerSessionBeanRemote, S
         return roomRate;
     }
 
+    @Override
     public void deleteRoomRate(Long rateId) throws RoomRateNotFoundException {
         RoomRate roomRate = em.find(RoomRate.class, rateId);
         if (roomRate == null) {
@@ -94,4 +101,5 @@ public class SalesManagerSessionBean implements SalesManagerSessionBeanRemote, S
 
     // Add business logic below. (Right-click in editor and choose
     // "Insert Code > Add Business Method")
+
 }

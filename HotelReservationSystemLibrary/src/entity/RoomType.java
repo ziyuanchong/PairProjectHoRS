@@ -51,6 +51,9 @@ public class RoomType implements Serializable {
     @Column(nullable = false)
     private RoomTypeEnum roomCategory; // Enum to represent categories like DELUXE, SUITE
 
+    private boolean available;
+
+
     @OneToMany(mappedBy = "roomType", cascade = CascadeType.ALL)
     private List<Reservation> reservations = new ArrayList<>();
 
@@ -60,7 +63,8 @@ public class RoomType implements Serializable {
     @OneToMany(mappedBy = "roomType", cascade = CascadeType.ALL)
     private List<RoomRate> roomRates = new ArrayList<>(); // One-to-many relationship with RoomRate
 
-    public RoomType(String name, String description, double size, String bed, int capacity, List<String> amenities, RoomTypeEnum roomCategory) {
+    public RoomType(String name, String description, double size, String bed, int capacity, List<String> amenities, RoomTypeEnum roomCategory, boolean available) {
+
         this.name = name;
         this.description = description;
         this.size = size;
@@ -68,7 +72,11 @@ public class RoomType implements Serializable {
         this.capacity = capacity;
         this.amenities = amenities;
         this.roomCategory = roomCategory;
+        this.available = available;
+        
+
     }
+    
 
     public RoomType(String name, String description, double size, String bed, int capacity, RoomTypeEnum roomCategory) {
         this.name = name;
@@ -83,6 +91,23 @@ public class RoomType implements Serializable {
 
     public RoomType() {
     }
+
+    public RoomTypeEnum getRoomCategory() {
+        return roomCategory;
+    }
+
+    public void setRoomCategory(RoomTypeEnum roomCategory) {
+        this.roomCategory = roomCategory;
+    }
+
+    public boolean isAvailable() {
+        return available;
+    }
+
+    public void setAvailable(boolean available) {
+        this.available = available;
+    }
+    
 
     // Getters and Setters for all fields
 
@@ -150,6 +175,7 @@ public class RoomType implements Serializable {
         this.roomCategory = roomCategory;
     }
 
+
     public List<Reservation> getReservations() {
         return reservations;
     }
@@ -196,4 +222,7 @@ public class RoomType implements Serializable {
     public String toString() {
         return "entity.RoomType[ id=" + getRoomTypeId() + " ]";
     }
+
 }
+
+

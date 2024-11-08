@@ -19,4 +19,6 @@ public interface EmployeeSessionBeanLocal {
 
     public List<Employee> retrieveAllEmployees();
     
+    public Employee login(String employeeName, String password);
+    
 }

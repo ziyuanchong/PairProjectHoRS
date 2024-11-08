@@ -13,7 +13,12 @@ import javax.ejb.Remote;
  * @author ziyuanchong
  */
 @Remote
-public interface EmployeeSessionBeanRemote {    
+public interface EmployeeSessionBeanRemote {
+
     public Long createNewEmployee(Employee employee);
-    
+
+    public Employee login(String employeeName, String password);
+
+    public List<Employee> retrieveAllEmployees();
+
 }
