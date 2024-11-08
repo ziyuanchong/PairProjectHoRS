@@ -6,7 +6,7 @@ package Enum;
 
 /**
  *
- * @author Witt
+ * @author ziyuanchong
  */
 public enum RoomTypeEnum {
     DELUXE,

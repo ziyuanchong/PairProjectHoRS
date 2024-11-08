@@ -122,18 +122,6 @@ public class Room implements Serializable {
         return "entity.Room[ id=" + roomId + " ]";
     }
 
-    /**
-     * @return the reservationRooms
-     */
-    public List<ReservationRoom> getReservationRooms() {
-        return reservationRooms;
-    }
-
-    /**
-     * @param reservationRooms the reservationRooms to set
-     */
-    public void setReservationRooms(List<ReservationRoom> reservationRooms) {
-        this.reservationRooms = reservationRooms;
-    }
+    
     
 }
