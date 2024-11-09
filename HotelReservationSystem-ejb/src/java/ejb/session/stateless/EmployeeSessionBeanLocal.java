@@ -5,6 +5,9 @@
 package ejb.session.stateless;
 
 import entity.Employee;
+import exception.EmployeeAlreadyLoggedInException;
+import exception.EmployeeNotFoundException;
+import exception.EmployeeNotLoggedInException;
 import java.util.List;
 import javax.ejb.Local;
 
@@ -19,6 +22,8 @@ public interface EmployeeSessionBeanLocal {
 
     public List<Employee> retrieveAllEmployees();
     
-    public Employee login(String employeeName, String password);
+    public Employee login(String employeeName, String password) throws EmployeeAlreadyLoggedInException, EmployeeNotFoundException;
+
+    public void logout(Long employeeId) throws EmployeeNotLoggedInException, EmployeeNotFoundException;
     
 }

@@ -5,6 +5,9 @@
 package ejb.session.stateless;
 
 import entity.Employee;
+import exception.EmployeeAlreadyLoggedInException;
+import exception.EmployeeNotFoundException;
+import exception.EmployeeNotLoggedInException;
 import java.util.List;
 import javax.ejb.Remote;
 
@@ -17,8 +20,11 @@ public interface EmployeeSessionBeanRemote {
 
     public Long createNewEmployee(Employee employee);
 
-    public Employee login(String employeeName, String password);
+    public Employee login(String employeeName, String password) throws EmployeeAlreadyLoggedInException, EmployeeNotFoundException;
 
     public List<Employee> retrieveAllEmployees();
+    
+    public void logout(Long employeeId) throws EmployeeNotLoggedInException, EmployeeNotFoundException;
+
 
 }

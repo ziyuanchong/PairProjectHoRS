@@ -12,6 +12,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
 import javax.persistence.OneToMany;
 
 /**
@@ -19,6 +21,7 @@ import javax.persistence.OneToMany;
  * @author ziyuanchong
  */
 @Entity
+@Inheritance(strategy = InheritanceType.JOINED)
 public class Guest implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -32,19 +35,33 @@ public class Guest implements Serializable {
     private String phoneNumber;
     @Column(length= 256, nullable = false, unique = true)
     private String email;
+    @Column(nullable = false)
+    private boolean checkIn = false;
     
     @OneToMany(mappedBy = "guest")
     private List<Reservation> reservations = new ArrayList<>();
 
-    public Guest(String firstName, String lastName, String phoneNumber, String email) {
+    public Guest(String firstName, String lastName, String phoneNumber, String email, boolean checkIn) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.phoneNumber = phoneNumber;
         this.email = email;
+        this.checkIn = checkIn;
     }
+    
 
     public Guest() {
     }
+
+    public boolean isCheckIn() {
+        return checkIn;
+    }
+
+    public void setCheckIn(boolean checkIn) {
+        this.checkIn = checkIn;
+    }
+    
+    
 
     public String getFirstName() {
         return firstName;

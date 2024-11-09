@@ -40,7 +40,14 @@ HotelReservationSystemLibrary/nbproject/private/
 HotelReservationSystemLibrary/build/
 HotelReservationSystemLibrary/dist/
 
+HotelReservationManagementClient/nbproject/private/
+HotelReservationManagementClient/build/
+HotelReservationManagementClient/dist/
+
+HotelReservationClient/nbproject/private/
+HotelReservationClient/build/
+HotelReservationClient/dist/
+
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
-/HotelReservationManagementClient/nbproject/private/
-/HotelReservationClient/nbproject/private/
+

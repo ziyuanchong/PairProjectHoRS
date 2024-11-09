@@ -28,6 +28,7 @@ public class Employee implements Serializable {
     @Column(length = 32, nullable = false, unique = true) 
     private String employeeName;
     private EmployeeEnum employeeEnum;
+    private boolean loggedIn = false;
 
     public Employee() {
     }
@@ -37,6 +38,15 @@ public class Employee implements Serializable {
         this.password = password;
         this.employeeEnum = employeeEnum;
     }
+
+    public boolean isLoggedIn() {
+        return loggedIn;
+    }
+
+    public void setLoggedIn(boolean loggedIn) {
+        this.loggedIn = loggedIn;
+    }
+    
     
 /**
      * @return the employeeName
