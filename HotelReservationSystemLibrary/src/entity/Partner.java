@@ -32,6 +32,9 @@ public class Partner implements Serializable {
         this.password = password;
     }
 
+    public Partner() {
+    }
+
     public Long getId() {
         return id;
     }

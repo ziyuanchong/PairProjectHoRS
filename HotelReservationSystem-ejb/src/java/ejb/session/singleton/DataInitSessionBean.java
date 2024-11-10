@@ -4,6 +4,7 @@
  */
 package ejb.session.singleton;
 
+import Enum.EmployeeEnum;
 import ejb.session.stateless.EmployeeSessionBeanLocal;
 import entity.Employee;
 import javax.annotation.PostConstruct;
@@ -34,13 +35,7 @@ public class DataInitSessionBean {
     @PostConstruct
     public void postConstruct() {
         if(em.find(Employee.class, 1l) == null) {
-            employeeSessionBeanLocal.createNewEmployee(new Employee("A", "password"));
-            employeeSessionBeanLocal.createNewEmployee(new Employee("B", "password"));
-            employeeSessionBeanLocal.createNewEmployee(new Employee("C", "password"));
-            employeeSessionBeanLocal.createNewEmployee(new Employee("D", "password"));
-            employeeSessionBeanLocal.createNewEmployee(new Employee("E", "password"));
-
-
+            employeeSessionBeanLocal.createNewEmployee(new Employee("A", "password", EmployeeEnum.SYSTEMADMINISTRATOR));
 
         }
         

@@ -29,7 +29,7 @@ public class PaymentSessionBean implements PaymentSessionBeanRemote, PaymentSess
     private EntityManager em;
 
     public BigDecimal calculatePaymentForReservationClient(String name, Date startDate, Date endDate, int numberOfRooms) throws RoomTypeNotFoundException, RoomRateNotFoundException { //payment for online customer
-        RoomType rt = em.createQuery("SELECT rt FROM RoomType rt WHERE rt.name =: name", RoomType.class)
+        RoomType rt = em.createQuery("SELECT rt FROM RoomType rt WHERE rt.name = :name", RoomType.class)
                 .setParameter("name", name)
                 .getSingleResult();
         BigDecimal totalAmount = new BigDecimal(0);
@@ -70,7 +70,7 @@ public class PaymentSessionBean implements PaymentSessionBeanRemote, PaymentSess
     }
 
     public BigDecimal calculatePaymentForManagementClient(String name, Date startDate, Date endDate, int numberOfRooms) throws RoomRateNotFoundException { //payment for walkin guests
-        RoomType rt = em.createQuery("SELECT rt FROM RoomType rt WHERE rt.name =: name", RoomType.class)
+        RoomType rt = em.createQuery("SELECT rt FROM RoomType rt WHERE rt.name = :name", RoomType.class)
                 .setParameter("name", name)
                 .getSingleResult();
         BigDecimal totalAmount = new BigDecimal(0);
