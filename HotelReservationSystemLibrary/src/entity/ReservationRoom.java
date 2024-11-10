@@ -5,6 +5,7 @@
 package entity;
 
 import java.io.Serializable;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -34,7 +35,7 @@ public class ReservationRoom implements Serializable {
     @JoinColumn(nullable = false)
     private Reservation reservation;
     
-    @OneToOne(mappedBy = "reservationRoom, cascade = CascadeType.ALL, orphanRemoval = true")
+    @OneToOne(mappedBy = "reservationRoom", cascade = CascadeType.ALL, orphanRemoval = true)
     private ExceptionAllocationReport exceptionAllocationReport;
 
     public ReservationRoom(Room room, Reservation reservation, ExceptionAllocationReport exceptionAllocationReport) {

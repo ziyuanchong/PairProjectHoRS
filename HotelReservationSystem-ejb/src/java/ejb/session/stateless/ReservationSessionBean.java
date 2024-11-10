@@ -32,7 +32,7 @@ public class ReservationSessionBean implements ReservationSessionBeanRemote, Res
 
     public boolean checkForAvailableRooms(String name, Date startDate, Date endDate, int numberOfRooms) throws RoomTypeNotFoundException { //check if roomtype can accomodate
         List<Reservation> overlapReservations = em.createQuery( //retrieve list of reservations which dates overlap with the current reservation
-                "SELECT r FROM Reservation r WHERE r.startDate <=: endDate AND r.endDate >=: startDate", Reservation.class)
+                "SELECT r FROM Reservation r WHERE r.startDate <= :endDate AND r.endDate >= :startDate", Reservation.class)
                 .setParameter("startDate", startDate)
                 .setParameter("endDate", endDate)
                 .getResultList();
@@ -42,7 +42,7 @@ public class ReservationSessionBean implements ReservationSessionBeanRemote, Res
                 totalUsedRooms += r.getNumberOfRooms();
             }
         }
-        RoomType rt = em.createQuery("SELECT rt FROM RoomType WHERE rt.name =: roomType", RoomType.class)
+        RoomType rt = em.createQuery("SELECT rt FROM RoomType WHERE rt.name = :roomType", RoomType.class)
                 .setParameter("name", name)
                 .getSingleResult(); //retrieving RoomType
         int numberOfAvailableRooms = 0;
@@ -86,7 +86,7 @@ public class ReservationSessionBean implements ReservationSessionBeanRemote, Res
         // Create a new reservation linked to the walk-in guest
         Guest guest = em.find(Guest.class, guestId); // returns Customer if finds customer;
         Reservation reservation = new Reservation(checkInDate, checkOutDate, numberOfRooms, totalAmount);
-        RoomType rt = em.createQuery("SELECT rt FROM RoomType rt WHERE rt.name =: name", RoomType.class)
+        RoomType rt = em.createQuery("SELECT rt FROM RoomType rt WHERE rt.name = :name", RoomType.class)
                 .setParameter("name", name)
                 .getSingleResult();
         reservation.setGuest(guest);

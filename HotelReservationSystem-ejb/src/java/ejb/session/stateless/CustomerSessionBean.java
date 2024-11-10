@@ -22,6 +22,7 @@ import javax.ejb.Stateless;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.transaction.UserTransaction;
 
@@ -37,19 +38,21 @@ public class CustomerSessionBean implements CustomerSessionBeanRemote, CustomerS
 
     public void createNewCustomer(Customer customer) throws CustomerExistException { //use case 2 : register
         String email = customer.getEmail();
-        Customer customerExists = em.createQuery("SELECT c FROM Customer c WHERE c.email =: email", Customer.class)
-                .setParameter("email", email)
-                .getSingleResult();
-        if (customerExists != null) {
-            throw new CustomerExistException("This Customer is alreayd registered");
-        } else {
+        try {
+            Customer customerExists = em.createQuery("SELECT c FROM Customer c WHERE c.email = :email", Customer.class)
+                    .setParameter("email", email)
+                    .getSingleResult();
+
+            throw new CustomerExistException("This Customer is already registered");
+        } catch (NoResultException ex) {
             em.persist(customer);
             em.flush();
         }
+
     }
 
     public Customer login(String email, String password) throws CustomerWrongCredentialsException { //use case 1 : login
-        Customer customer = em.createQuery("SELECT c FROM Customer c WHERE c.email =: email AND c.password =: password", Customer.class)
+        Customer customer = em.createQuery("SELECT c FROM Customer c WHERE c.email = :email AND c.password = :password", Customer.class)
                 .setParameter("password", password)
                 .setParameter("email", email)
                 .getSingleResult();
