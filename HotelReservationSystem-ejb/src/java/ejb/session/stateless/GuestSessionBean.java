@@ -41,6 +41,7 @@ public class GuestSessionBean implements GuestSessionBeanRemote, GuestSessionBea
             throw new GeneralException("An unexpected error occurred while creating a new guest: " + ex.getMessage());
         }
     }
+    
 
     // Add business logic below. (Right-click in editor and choose
     // "Insert Code > Add Business Method")

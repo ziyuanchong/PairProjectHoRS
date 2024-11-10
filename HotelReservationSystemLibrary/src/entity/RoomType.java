@@ -76,20 +76,9 @@ public class RoomType implements Serializable {
         
 
     }
-    
-
-    public RoomType(String name, String description, double size, String bed, int capacity, RoomTypeEnum roomCategory) {
-        this.name = name;
-        this.description = description;
-        this.size = size;
-        this.bed = bed;
-        this.capacity = capacity;
-        this.roomCategory = roomCategory;
-    }
-    
-    
 
     public RoomType() {
+ 
     }
 
     public RoomTypeEnum getRoomCategory() {
