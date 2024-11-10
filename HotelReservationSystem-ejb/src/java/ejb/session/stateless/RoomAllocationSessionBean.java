@@ -44,7 +44,7 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
 
             if (allocatedRoom != null) {
                 // Room successfully allocated; mark it as unavailable
-                allocatedRoom.setIsAvailable(false);
+                allocatedRoom.setIsAllocated(true);
                 em.merge(allocatedRoom);
 
                 // Link Room to Reservation
@@ -59,7 +59,7 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
 
                 if (upgradedRoom != null) {
                     // Upgrade successful; mark the upgraded room as unavailable
-                    upgradedRoom.setIsAvailable(false);
+                    upgradedRoom.setIsAllocated(true);
                     em.merge(upgradedRoom);
 
                     ReservationRoom reservationRoom = new ReservationRoom(upgradedRoom, reservation);
@@ -85,7 +85,7 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
     private Room allocateRoomToReservation(Reservation reservation) {
         try {
             return em.createQuery(
-                    "SELECT r FROM Room r WHERE r.roomType = :roomType AND r.isAvailable = true", Room.class)
+                    "SELECT r FROM Room r WHERE r.roomType = :roomType AND r.isAllocated = false", Room.class)
                     .setParameter("roomType", reservation.getRoomType())
                     .setMaxResults(1)
                     .getSingleResult();
@@ -102,7 +102,7 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
 
             // Find the next available room in a higher rank room type
             return em.createQuery(
-                    "SELECT r FROM Room r WHERE r.roomType.roomTypeEnum.ordinal > :requestedRank AND r.isAvailable = true ORDER BY r.roomType.roomTypeEnum.ordinal ASC", Room.class)
+                    "SELECT r FROM Room r WHERE r.roomType.roomTypeEnum.ordinal > :requestedRank AND r.isAllocated = false ORDER BY r.roomType.roomTypeEnum.ordinal ASC", Room.class)
                     .setParameter("requestedRank", requestedRank)
                     .setMaxResults(1)
                     .getSingleResult();

@@ -42,6 +42,7 @@ public class Guest implements Serializable {
     private List<Reservation> reservations = new ArrayList<>();
 
     public Guest(String firstName, String lastName, String phoneNumber, String email, boolean checkIn) {
+        this();
         this.firstName = firstName;
         this.lastName = lastName;
         this.phoneNumber = phoneNumber;
@@ -51,6 +52,7 @@ public class Guest implements Serializable {
     
 
     public Guest() {
+        this.reservations = new ArrayList<>();
     }
 
     public boolean isCheckIn() {

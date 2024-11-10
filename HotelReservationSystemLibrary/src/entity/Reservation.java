@@ -5,6 +5,8 @@
 package entity;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.CascadeType;
@@ -33,11 +35,11 @@ public class Reservation implements Serializable {
     private Date startDate;
     @Temporal(TemporalType.DATE)
     private Date endDate;
-    
+    private int numberOfRooms;
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(nullable = false)
     private Guest guest;
-    
+    private BigDecimal totalAmount;
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(nullable = false)
     private RoomType roomType;
@@ -48,11 +50,31 @@ public class Reservation implements Serializable {
     
 
     public Reservation() {
+        this.reservationRooms = new ArrayList<>();
     }
 
-    public Reservation(Date startDate, Date endDate) {
+    public Reservation(Date startDate, Date endDate, int numberOfRooms, BigDecimal totalAmount) {
+        this();
         this.startDate = startDate;
         this.endDate = endDate;
+        this.numberOfRooms = numberOfRooms;
+        this.totalAmount = totalAmount;
+    }
+
+    public BigDecimal getTotalAmount() {
+        return totalAmount;
+    }
+
+    public void setTotalAmount(BigDecimal totalAmount) {
+        this.totalAmount = totalAmount;
+    }
+
+    public int getNumberOfRooms() {
+        return numberOfRooms;
+    }
+
+    public void setNumberOfRooms(int numberOfRooms) {
+        this.numberOfRooms = numberOfRooms;
     }
 
     public Date getStartDate() {

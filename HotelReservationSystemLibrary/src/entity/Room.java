@@ -5,6 +5,7 @@
 package entity;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -32,6 +33,9 @@ public class Room implements Serializable {
     @Column(nullable = false)
     private boolean isAvailable;
     
+    @Column(nullable = false)
+    private boolean isAllocated;
+    
     @ManyToOne
     @JoinColumn(name = "roomTypeId", nullable = false)
     private RoomType roomType;
@@ -39,15 +43,27 @@ public class Room implements Serializable {
     @OneToMany(mappedBy = "room")
     private List<ReservationRoom> reservationRooms;
 
-    public Room() {
+    public boolean getIsAllocated() {
+        return isAllocated;
+    }
+
+    public void setIsAllocated(boolean isAllocated) {
+        this.isAllocated = isAllocated;
+    }
+
+    public Room() { //default instantiation of room is not reserved
+        this.reservationRooms = new ArrayList<>();
+        this.isAllocated = false;
     }
 
     public Room(String roomNumber, boolean isAvailable) {
+        this();
         this.roomNumber = roomNumber;
-        this.isAvailable = isAvailable;
+        this.isAllocated = false;
     }
 
     public Room(String roomNumber, boolean isAvailable, RoomType roomType) {
+        this();
         this.roomNumber = roomNumber;
         this.isAvailable = isAvailable;
         this.roomType = roomType;
