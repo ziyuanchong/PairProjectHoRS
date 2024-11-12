@@ -43,7 +43,7 @@ public class CustomerSessionBean implements CustomerSessionBeanRemote, CustomerS
                     .setParameter("email", email)
                     .getSingleResult();
 
-            throw new CustomerExistException("This Customer is already registered");
+            throw new CustomerExistException("This email is already registered");
         } catch (NoResultException ex) {
             em.persist(customer);
             em.flush();

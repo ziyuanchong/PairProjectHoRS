@@ -42,7 +42,7 @@ public class ReservationSessionBean implements ReservationSessionBeanRemote, Res
                 totalUsedRooms += r.getNumberOfRooms();
             }
         }
-        RoomType rt = em.createQuery("SELECT rt FROM RoomType WHERE rt.name = :roomType", RoomType.class)
+        RoomType rt = em.createQuery("SELECT rt FROM RoomType rt WHERE rt.name = :name", RoomType.class)
                 .setParameter("name", name)
                 .getSingleResult(); //retrieving RoomType
         int numberOfAvailableRooms = 0;
@@ -115,3 +115,4 @@ public class ReservationSessionBean implements ReservationSessionBeanRemote, Res
     }
 
 }
+    

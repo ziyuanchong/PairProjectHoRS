@@ -4,7 +4,9 @@
  */
 package ejb.session.stateless;
 
+import entity.ExceptionAllocationReport;
 import java.util.Date;
+import java.util.List;
 import javax.ejb.Remote;
 
 /**
@@ -13,6 +15,9 @@ import javax.ejb.Remote;
  */
 @Remote
 public interface RoomAllocationSessionBeanRemote {
-    public void allocateRoomsForDate(Date date);
+    public List<ExceptionAllocationReport> allocateRoomsForDate(Date date);
+
+    public void resetRoomAvailability();
+
 
 }

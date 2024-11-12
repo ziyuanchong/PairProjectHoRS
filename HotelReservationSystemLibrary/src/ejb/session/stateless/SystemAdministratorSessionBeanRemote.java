@@ -17,7 +17,8 @@ import javax.ejb.Remote;
 @Remote
 public interface SystemAdministratorSessionBeanRemote {
 
-    public Employee createEmployee(String username, String password, EmployeeEnum employeeEnum);
+    public Employee createEmployee(String name, String username, String password, EmployeeEnum employeeEnum) throws Exception;
+    public void updateEmployee(Employee employee);
     
     public List<Employee> retrieveAllEmployees();
     

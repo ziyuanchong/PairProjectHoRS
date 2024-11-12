@@ -8,9 +8,13 @@ import Enum.EmployeeEnum;
 import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 /**
  *
@@ -23,18 +27,43 @@ public class Employee implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long employeeId;
-    @Column(length = 32, nullable = false) 
+    
+    @Column(length = 32, nullable = false, unique = true)
+    @NotNull(message = "Username cannot be null")
+    @Size(min = 5, max = 20, message = "Username must be between 5 and 20 characters long")
+    private String username;
+    
+    @Column(length = 32, nullable = false)
+    @NotNull(message = "Password cannot be null")
+    @Size(min = 8, message = "Password must be at least 8 characters long")
     private String password;
-    @Column(length = 32, nullable = false, unique = true) 
+    
+    @Column(length = 32, nullable = false)
+    @NotNull(message = "Name cannot be null")
     private String employeeName;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @NotNull(message = "Role cannot be null")
     private EmployeeEnum employeeEnum;
+    
     private boolean loggedIn = false;
 
     public Employee() {
     }
 
-    public Employee(String employeeName, String password, EmployeeEnum employeeEnum) {
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    
+    public Employee(String employeeName, String username, String password, EmployeeEnum employeeEnum) {
         this.employeeName = employeeName;
+        this.username = username;
         this.password = password;
         this.employeeEnum = employeeEnum;
     }
@@ -105,7 +134,7 @@ public class Employee implements Serializable {
 
     @Override
     public String toString() {
-        return "entity.Employee[ id=" + employeeId + " ]";
+        return "Username: " + username+ ", Type: "+ employeeEnum;
     }
 
     /**

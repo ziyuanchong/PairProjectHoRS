@@ -12,6 +12,7 @@ import exception.GuestCheckInException;
 import exception.GuestCheckOutException;
 import exception.ReservationNotFoundException;
 import exception.ReservationUnavailableException;
+import exception.RoomNotAvailableException;
 import exception.RoomTypeNotFoundException;
 import java.math.BigDecimal;
 import java.util.Date;
@@ -27,10 +28,12 @@ public interface GuestRelationOfficerSessionBeanLocal {
 
     public List<RoomType> searchAvailableRooms(Date checkInDate, Date checkOutDate, int numRooms) throws ReservationUnavailableException, RoomTypeNotFoundException;
 
-   public Reservation reserveRoomsForWalkIn(Long guestId, String name, Date checkInDate, Date checkOutDate, int numberOfRooms, BigDecimal totalAmount);
-
     public void checkInGuest(Long reservationId) throws ReservationNotFoundException, GuestCheckInException;
 
     public void checkOutGuest(Long reservationId) throws ReservationNotFoundException, GuestCheckOutException;
+
+    public Reservation walkInReserveRoom(RoomType roomType, int numberOfRooms, Date checkInDate, Date checkOutDate) throws RoomNotAvailableException;
+
+    public void checkOutGuestByRoomNumber(String roomNumber) throws ReservationNotFoundException, GuestCheckOutException;
     
 }

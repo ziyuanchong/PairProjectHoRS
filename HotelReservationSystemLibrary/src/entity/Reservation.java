@@ -36,18 +36,19 @@ public class Reservation implements Serializable {
     @Temporal(TemporalType.DATE)
     private Date endDate;
     private int numberOfRooms;
+    
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(nullable = false)
     private Guest guest;
+    
     private BigDecimal totalAmount;
+    
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(nullable = false)
     private RoomType roomType;
-    
-    @OneToMany(mappedBy = "reservation")    
+
+    @OneToMany(mappedBy = "reservation")
     private List<ReservationRoom> reservationRooms;
-    
-    
 
     public Reservation() {
         this.reservationRooms = new ArrayList<>();
@@ -59,6 +60,13 @@ public class Reservation implements Serializable {
         this.endDate = endDate;
         this.numberOfRooms = numberOfRooms;
         this.totalAmount = totalAmount;
+    }
+
+    public Reservation(Date startDate, Date endDate, int numberOfRooms, RoomType roomType) {
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.numberOfRooms = numberOfRooms;
+        this.roomType = roomType;
     }
 
     public BigDecimal getTotalAmount() {
@@ -109,7 +117,6 @@ public class Reservation implements Serializable {
         this.reservationRooms = reservationRooms;
     }
 
-
     public RoomType getRoomType() {
         return roomType;
     }
@@ -117,8 +124,7 @@ public class Reservation implements Serializable {
     public void setRoomType(RoomType roomType) {
         this.roomType = roomType;
     }
-    
-    
+
     public Long getReservationId() {
         return reservationId;
     }
@@ -151,5 +157,5 @@ public class Reservation implements Serializable {
     public String toString() {
         return "entity.Reservation[ id=" + reservationId + " ]";
     }
-    
+
 }

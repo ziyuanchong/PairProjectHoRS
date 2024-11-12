@@ -23,6 +23,14 @@ public class RoomAllocationSchedulerSessionBean {
 
     @EJB
     private RoomAllocationSessionBeanLocal roomAllocationSessionBean;
+    
+    @Schedule(hour = "1", minute = "50", second = "0", persistent = false)
+    public void dailyResetRoomAvailability() {
+        System.out.println("Starting room reset availability at 1:50 a.m.");
+        roomAllocationSessionBean.resetRoomAvailability();
+        System.out.println("Room reset availability completed.");
+    }
+    
 
     // Automatically triggers room allocation daily at 2 a.m.
     @Schedule(hour = "2", minute = "0", second = "0", persistent = false)

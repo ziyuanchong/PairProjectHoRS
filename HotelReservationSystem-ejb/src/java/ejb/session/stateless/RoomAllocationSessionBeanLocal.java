@@ -4,7 +4,9 @@
  */
 package ejb.session.stateless;
 
+import entity.ExceptionAllocationReport;
 import java.util.Date;
+import java.util.List;
 import javax.ejb.Local;
 
 /**
@@ -14,6 +16,9 @@ import javax.ejb.Local;
 @Local
 public interface RoomAllocationSessionBeanLocal {
 
-    public void allocateRoomsForDate(Date date);
+    public List<ExceptionAllocationReport> allocateRoomsForDate(Date date);
+
+    public void resetRoomAvailability();
+
     
 }

@@ -25,5 +25,7 @@ public interface EmployeeSessionBeanLocal {
     public Employee login(String employeeName, String password) throws EmployeeAlreadyLoggedInException, EmployeeNotFoundException;
 
     public void logout(Long employeeId) throws EmployeeNotLoggedInException, EmployeeNotFoundException;
+
+    public Employee retrieveEmployeeByUsername(String username);
     
 }

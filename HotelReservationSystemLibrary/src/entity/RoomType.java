@@ -14,6 +14,7 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -26,7 +27,7 @@ import javax.persistence.OneToMany;
 @Entity
 public class RoomType implements Serializable {
 
-    private static long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long roomTypeId;
@@ -53,6 +54,8 @@ public class RoomType implements Serializable {
 
     private boolean available;
 
+    @Column(length = 32) // Store the name of the next higher room type
+    private String nextHigherRoomType;
 
     @OneToMany(mappedBy = "roomType", cascade = CascadeType.ALL)
     private List<Reservation> reservations = new ArrayList<>();
@@ -73,12 +76,19 @@ public class RoomType implements Serializable {
         this.amenities = amenities;
         this.roomCategory = roomCategory;
         this.available = available;
-        
 
     }
 
     public RoomType() {
- 
+
+    }
+
+    public String getNextHigherRoomType() {
+        return nextHigherRoomType;
+    }
+
+    public void setNextHigherRoomType(String nextHigherRoomType) {
+        this.nextHigherRoomType = nextHigherRoomType;
     }
 
     public RoomTypeEnum getRoomCategory() {
@@ -96,10 +106,8 @@ public class RoomType implements Serializable {
     public void setAvailable(boolean available) {
         this.available = available;
     }
-    
 
     // Getters and Setters for all fields
-
     public Long getRoomTypeId() {
         return roomTypeId;
     }
@@ -107,7 +115,7 @@ public class RoomType implements Serializable {
     public void setRoomTypeId(Long roomTypeId) {
         this.roomTypeId = roomTypeId;
     }
-    
+
     public String getName() {
         return name;
     }
@@ -164,7 +172,6 @@ public class RoomType implements Serializable {
         this.roomCategory = roomCategory;
     }
 
-
     public List<Reservation> getReservations() {
         return reservations;
     }
@@ -188,8 +195,6 @@ public class RoomType implements Serializable {
     public void setRoomRates(List<RoomRate> roomRates) {
         this.roomRates = roomRates;
     }
-    
-    
 
     @Override
     public int hashCode() {
@@ -209,9 +214,20 @@ public class RoomType implements Serializable {
 
     @Override
     public String toString() {
-        return "entity.RoomType[ id=" + getRoomTypeId() + " ]";
+            String amenitiesStr = amenities != null ? String.join(", ", amenities) : "No amenities listed";
+
+        return "RoomType{"
+                + "ID=" + roomTypeId
+                + ", Name='" + name + '\''
+                + ", Description='" + description + '\''
+                + ", Size=" + size
+                + ", Bed='" + bed + '\''
+                + ", Capacity=" + capacity
+                + ", Amenities=" + amenitiesStr
+                + ", Room Category=" + roomCategory
+                + ", Available=" + available
+                + ", Next Higher Room Type='" + (nextHigherRoomType != null ? nextHigherRoomType : "None") + '\''
+                + '}';
     }
 
 }
-
-

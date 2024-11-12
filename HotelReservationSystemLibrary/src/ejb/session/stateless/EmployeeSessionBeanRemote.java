@@ -26,5 +26,6 @@ public interface EmployeeSessionBeanRemote {
     
     public void logout(Long employeeId) throws EmployeeNotLoggedInException, EmployeeNotFoundException;
 
+    public Employee retrieveEmployeeByUsername(String username);
 
 }

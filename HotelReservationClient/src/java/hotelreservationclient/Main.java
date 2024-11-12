@@ -34,14 +34,15 @@ import javax.ejb.EJB;
 public class Main {
 
     @EJB
+    private static PaymentSessionBeanRemote paymentSessionBean;
+
+    @EJB
     private static ReservationSessionBeanRemote reservationSessionBean;
 
     @EJB
     private static CustomerSessionBeanRemote customerSessionBean;
 
-    @EJB
-    private static PaymentSessionBeanRemote paymentSessionBean;
-
+    
     public static void main(String[] args) throws CustomerWrongCredentialsException, InputNotValidException, CustomerExistException {
         Scanner sc = new Scanner(System.in);
         Integer response = 1;

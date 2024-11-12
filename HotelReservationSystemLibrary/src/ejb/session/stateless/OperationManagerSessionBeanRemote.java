@@ -11,6 +11,7 @@ import entity.Room;
 import entity.RoomType;
 import exception.RoomNotFoundException;
 import exception.RoomTypeNotFoundException;
+import java.math.BigDecimal;
 import java.util.List;
 import javax.ejb.Remote;
 
@@ -21,10 +22,11 @@ import javax.ejb.Remote;
 @Remote
 public interface OperationManagerSessionBeanRemote {
 
-    public RoomType createRoomType(String name, String description, double size, String bed, int capacity, List<String> amenities, RoomTypeEnum roomTypeEnum, boolean available);
+    public RoomType createRoomType(String name, String description, double size, String bed, int capacity, List<String> amenities, RoomTypeEnum roomTypeEnum, boolean available, String nextHigherRoomType);
 
+    public Room findRoomByNumber(String roomNumber) throws RoomNotFoundException;
 
-    public void deleteRoomType(String name) throws RoomTypeNotFoundException;
+    public boolean deleteRoomType(String name) throws RoomTypeNotFoundException;
 
     public RoomType viewRoomTypeDetails(String name) throws RoomTypeNotFoundException;
     public List<RoomType> retrieveListOfRoomTypes();
@@ -40,5 +42,8 @@ public interface OperationManagerSessionBeanRemote {
     public List<Room> retrieveAllRooms();
 
     public ExceptionAllocationReport generateRoomAllocationExceptionReport(String roomTypeRequested, Long reservationRoomId) throws RoomNotFoundException;
+    public List<ExceptionAllocationReport> retrieveRoomAllocationExceptionReports();
+    public RoomType findRoomTypeByName(String name) throws RoomTypeNotFoundException;
+    public BigDecimal getPublishedRate(Long roomTypeId);
 
 }

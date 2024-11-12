@@ -14,15 +14,15 @@ import java.util.Date;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 
 /**
  *
-<<<<<<< HEAD
- * @author ziyuanchong
-=======
- * @author Witt
->>>>>>> origin/main
+ * <<<<<<< HEAD @a
+ *
+ *
+ * uthor ziyuanchong ======= @author Witt >>>>>>> origin/main
  */
 @Stateless
 public class SalesManagerSessionBean implements SalesManagerSessionBeanRemote, SalesManagerSessionBeanLocal {
@@ -52,19 +52,33 @@ public class SalesManagerSessionBean implements SalesManagerSessionBeanRemote, S
     }
 
     @Override
-    public RoomRate updateRoomRate(Long rateId, String name, RoomRateTypeEnum rateType, BigDecimal ratePerNight, Date startDate, Date endDate, Long roomTypeId)
+    public RoomRate findRoomRateByName(String name) throws RoomRateNotFoundException {
+        try {
+            return em.createQuery("SELECT rr FROM RoomRate rr WHERE rr.name = :name", RoomRate.class)
+                    .setParameter("name", name)
+                    .getSingleResult();
+        } catch (NoResultException ex) {
+            throw new RoomRateNotFoundException("Room rate with name '" + name + "' does not exist.");
+        }
+    }
+
+    @Override
+    public RoomRate updateRoomRate(String rateName, String newName, RoomRateTypeEnum rateType, BigDecimal ratePerNight,
+            Date startDate, Date endDate, String roomTypeName)
             throws RoomRateNotFoundException, RoomTypeNotFoundException {
-        RoomRate roomRate = em.find(RoomRate.class, rateId);
-        if (roomRate == null) {
-            throw new RoomRateNotFoundException("Room rate with ID " + rateId + " does not exist.");
+        RoomRate roomRate = findRoomRateByName(rateName);
+
+        // Find the RoomType by name
+        RoomType roomType;
+        try {
+            roomType = em.createQuery("SELECT rt FROM RoomType rt WHERE rt.name = :roomTypeName", RoomType.class)
+                    .setParameter("roomTypeName", roomTypeName)
+                    .getSingleResult();
+        } catch (NoResultException ex) {
+            throw new RoomTypeNotFoundException("Room type with name '" + roomTypeName + "' does not exist.");
         }
 
-        RoomType roomType = em.find(RoomType.class, roomTypeId);
-        if (roomType == null) {
-            throw new RoomTypeNotFoundException("Room type with ID " + roomTypeId + " does not exist.");
-        }
-
-        roomRate.setName(name);
+        roomRate.setName(newName);
         roomRate.setRateType(rateType);
         roomRate.setRatePerNight(ratePerNight);
         roomRate.setStartDate(startDate);
@@ -75,24 +89,37 @@ public class SalesManagerSessionBean implements SalesManagerSessionBeanRemote, S
     }
 
     @Override
-    public void deleteRoomRate(Long rateId) throws RoomRateNotFoundException {
-        RoomRate roomRate = em.find(RoomRate.class, rateId);
-        if (roomRate == null) {
-            throw new RoomRateNotFoundException("Room rate with ID " + rateId + " does not exist.");
-        }
+    public boolean deleteRoomRate(String rateName) throws RoomRateNotFoundException {
+        RoomRate roomRate = findRoomRateByName(rateName);
 
-        if (isRoomRateInUse(rateId)) {
-            roomRate.setRateType(RoomRateTypeEnum.DISABLED); // Assuming DISABLED is a type in RoomRateTypeEnum
+        if (isRoomRateInUse(roomRate.getRoomRateId())) {
+            roomRate.setRateType(RoomRateTypeEnum.DISABLED); // Disable instead of deleting if in use
+            em.merge(roomRate);
+            System.out.println("Room rate '" + rateName + "' is in use and has been marked as disabled.");
+            return false;
         } else {
-            em.remove(roomRate);
+            em.remove(roomRate); // Delete if not in use
+            System.out.println("Room rate '" + rateName + "' has been successfully deleted.");
+            return true;
         }
     }
 
-    private boolean isRoomRateInUse(Long rateId) {
-        // Checks if any reservations are associated with this room rate
-        return em.createQuery("SELECT COUNT(r) FROM Reservation r WHERE r.roomRate.roomRateId = :rateId", Long.class)
-                .setParameter("rateId", rateId)
-                .getSingleResult() > 0;
+    private boolean isRoomRateInUse(Long roomRateId) {
+        // Find the RoomType associated with the RoomRate
+        RoomRate roomRate = em.find(RoomRate.class, roomRateId);
+        if (roomRate == null) {
+            return false;
+        }
+
+        RoomType roomType = roomRate.getRoomType();
+
+        // Check if there are any reservations using this RoomType
+        Long reservationCount = em.createQuery(
+                "SELECT COUNT(r) FROM Reservation r WHERE r.roomType = :roomType", Long.class)
+                .setParameter("roomType", roomType)
+                .getSingleResult();
+
+        return reservationCount > 0;
     }
 
     public List<RoomRate> retrieveAllRoomRates() {
@@ -101,5 +128,4 @@ public class SalesManagerSessionBean implements SalesManagerSessionBeanRemote, S
 
     // Add business logic below. (Right-click in editor and choose
     // "Insert Code > Add Business Method")
-
 }

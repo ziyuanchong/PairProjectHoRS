@@ -23,11 +23,11 @@ import javax.persistence.TemporalType;
 
 /**
  *
-<<<<<<< HEAD
- * @author ziyuanchong
-=======
- * @author Witt
->>>>>>> origin/main
+ * <<<<<<< HEAD
+ * @a
+ *
+ * uthor ziyuanchong =======
+ * @author Witt >>>>>>> origin/main
  */
 @Entity
 public class RoomRate implements Serializable {
@@ -56,7 +56,6 @@ public class RoomRate implements Serializable {
     @ManyToOne(optional = false)
     @JoinColumn(name = "roomTypeId", nullable = false)
     private RoomType roomType;
-
 
     public RoomRate() {
     }
@@ -118,8 +117,6 @@ public class RoomRate implements Serializable {
         this.roomType = roomType;
     }
 
-    
-
     public Long getRoomRateId() {
         return roomRateId;
     }
@@ -150,8 +147,18 @@ public class RoomRate implements Serializable {
 
     @Override
     public String toString() {
-        return "entity.RoomRate[ id=" + roomRateId + " ]";
+        String startDateString = (startDate != null) ? startDate.toString() : "No start date";
+        String endDateString = (endDate != null) ? endDate.toString() : "No end date";
+
+        return String.format(
+                "Room Rate Name: %s\nRoom Type: %s\nRate Type: %s\nRate Per Night: %s\nStart Date: %s\nEnd Date: %s",
+                name,
+                roomType.getName(),
+                rateType,
+                ratePerNight,
+                startDateString,
+                endDateString
+        );
     }
-    
 
 }

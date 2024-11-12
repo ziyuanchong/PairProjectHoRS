@@ -16,13 +16,15 @@ import javax.ejb.Local;
  */
 @Local
 public interface SystemAdministratorSessionBeanLocal {
-    
-    public Employee createEmployee(String employeeName, String password, EmployeeEnum employeeEnum);
-    
+        
     public List<Employee> retrieveAllEmployees();
 
     public Partner createPartner(String partnerName, String password);
     
     public List<Partner> retrieveAllPartners();
+
+    public Employee createEmployee(String name, String username, String password, EmployeeEnum employeeEnum) throws Exception;
+
+    public void updateEmployee(Employee employee);
     
 }

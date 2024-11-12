@@ -34,6 +34,17 @@ public class EmployeeSessionBean implements EmployeeSessionBeanRemote, EmployeeS
     }
 
     @Override
+    public Employee retrieveEmployeeByUsername(String username) {
+        try {
+            return em.createQuery("SELECT e FROM Employee e WHERE e.username = :username", Employee.class)
+                    .setParameter("username", username)
+                    .getSingleResult();
+        } catch (NoResultException ex) {
+            return null; // No employee found with this username
+        }
+    }
+
+    @Override
     public List<Employee> retrieveAllEmployees() {
         Query query = em.createQuery("SELECT e FROM Employee e");
 
@@ -41,10 +52,10 @@ public class EmployeeSessionBean implements EmployeeSessionBeanRemote, EmployeeS
     }
 
     @Override
-    public Employee login(String employeeName, String password) throws EmployeeAlreadyLoggedInException, EmployeeNotFoundException {
+    public Employee login(String username, String password) throws EmployeeAlreadyLoggedInException, EmployeeNotFoundException {
         try {
-            Employee employee = em.createQuery("SELECT e FROM Employee e WHERE e.employeeName = :employeeName AND e.password = :password", Employee.class)
-                    .setParameter("employeeName", employeeName)
+            Employee employee = em.createQuery("SELECT e FROM Employee e WHERE e.username = :username AND e.password = :password", Employee.class)
+                    .setParameter("username", username)
                     .setParameter("password", password)
                     .getSingleResult();
 

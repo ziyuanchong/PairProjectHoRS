@@ -10,6 +10,7 @@ import entity.Reservation;
 import entity.ReservationRoom;
 import entity.Room;
 import entity.RoomType;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -30,10 +31,33 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
     private EntityManager em;
 
     @Override
-    public void allocateRoomsForDate(Date date) {
-        Date checkInDate = stripTime(date);  // Strip time for accurate comparison
+    public void resetRoomAvailability() {
+        Date today = stripTime(new Date());
 
-        // Retrieve all reservations for check-in on the specified date
+        // Find all reservations ending today
+        List<Reservation> endingReservations = em.createQuery(
+                "SELECT r FROM Reservation r WHERE r.endDate = :today", Reservation.class)
+                .setParameter("today", today)
+                .getResultList();
+
+        // Mark each room in the ending reservations as available
+        endingReservations.forEach(reservation -> {
+            reservation.getReservationRooms().forEach(reservationRoom -> {
+                Room room = reservationRoom.getRoom();
+                room.setIsAllocated(false); // Make room available
+                em.merge(room);
+            });
+        });
+    }
+
+    /**
+     *
+     */
+    @Override
+    public List<ExceptionAllocationReport> allocateRoomsForDate(Date date) {
+        Date checkInDate = stripTime(date);
+        List<ExceptionAllocationReport> exceptionReports = new ArrayList<>();
+
         List<Reservation> reservationsForDate = em.createQuery(
                 "SELECT r FROM Reservation r WHERE r.startDate = :checkInDate", Reservation.class)
                 .setParameter("checkInDate", checkInDate)
@@ -43,22 +67,18 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
             Room allocatedRoom = allocateRoomToReservation(reservation);
 
             if (allocatedRoom != null) {
-                // Room successfully allocated; mark it as unavailable
                 allocatedRoom.setIsAllocated(true);
                 em.merge(allocatedRoom);
 
-                // Link Room to Reservation
                 ReservationRoom reservationRoom = new ReservationRoom(allocatedRoom, reservation);
                 em.persist(reservationRoom);
 
                 reservation.getReservationRooms().add(reservationRoom);
                 em.merge(reservation);
             } else {
-                // Try to upgrade if no room of the requested type is available
                 Room upgradedRoom = allocateUpgradeRoom(reservation);
 
                 if (upgradedRoom != null) {
-                    // Upgrade successful; mark the upgraded room as unavailable
                     upgradedRoom.setIsAllocated(true);
                     em.merge(upgradedRoom);
 
@@ -67,8 +87,16 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
 
                     reservation.getReservationRooms().add(reservationRoom);
                     em.merge(reservation);
+
+                    ExceptionAllocationReport report = new ExceptionAllocationReport(
+                            AllocationExceptionTypeEnum.UPGRADE_AVAILABLE,
+                            new Date(),
+                            reservation.getRoomType().getName(),
+                            reservationRoom
+                    );
+                    em.persist(report);
+                    exceptionReports.add(report);
                 } else {
-                    // Neither requested nor upgrade room is available; generate ExceptionAllocationReport
                     ExceptionAllocationReport report = new ExceptionAllocationReport(
                             AllocationExceptionTypeEnum.NO_ROOM_AVAILABLE,
                             new Date(),
@@ -76,12 +104,14 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
                             null
                     );
                     em.persist(report);
+                    exceptionReports.add(report);
                 }
             }
         });
+
+        return exceptionReports;
     }
 
-    // Helper method to allocate a room of the requested type
     private Room allocateRoomToReservation(Reservation reservation) {
         try {
             return em.createQuery(
@@ -90,28 +120,41 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
                     .setMaxResults(1)
                     .getSingleResult();
         } catch (NoResultException ex) {
-            return null; // No available room of the requested type
+            return null;
         }
     }
 
-    // Helper method to allocate an upgraded room
     private Room allocateUpgradeRoom(Reservation reservation) {
         try {
             RoomType requestedRoomType = reservation.getRoomType();
-            int requestedRank = requestedRoomType.getRoomTypeEnum().ordinal();
+            String nextHigherRoomTypeName = requestedRoomType.getNextHigherRoomType();
 
-            // Find the next available room in a higher rank room type
-            return em.createQuery(
-                    "SELECT r FROM Room r WHERE r.roomType.roomTypeEnum.ordinal > :requestedRank AND r.isAllocated = false ORDER BY r.roomType.roomTypeEnum.ordinal ASC", Room.class)
-                    .setParameter("requestedRank", requestedRank)
-                    .setMaxResults(1)
-                    .getSingleResult();
+            while (nextHigherRoomTypeName != null) {
+                RoomType nextHigherRoomType = em.createQuery(
+                        "SELECT rt FROM RoomType rt WHERE rt.name = :name", RoomType.class)
+                        .setParameter("name", nextHigherRoomTypeName)
+                        .getSingleResult();
+
+                Room availableRoom = em.createQuery(
+                        "SELECT r FROM Room r WHERE r.roomType = :roomType AND r.isAllocated = false", Room.class)
+                        .setParameter("roomType", nextHigherRoomType)
+                        .setMaxResults(1)
+                        .getSingleResult();
+
+                if (availableRoom != null) {
+                    return availableRoom;
+                }
+
+                // Move to the next higher room type if current one is full
+                nextHigherRoomTypeName = nextHigherRoomType.getNextHigherRoomType();
+            }
+            return null;
+
         } catch (NoResultException ex) {
-            return null; // No upgrade available
+            return null;
         }
     }
 
-    // Helper method to strip the time component from a date
     private Date stripTime(Date date) {
         Calendar calendar = new GregorianCalendar();
         calendar.setTime(date);
