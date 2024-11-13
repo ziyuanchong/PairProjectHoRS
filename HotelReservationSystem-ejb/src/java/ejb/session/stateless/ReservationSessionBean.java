@@ -31,22 +31,24 @@ public class ReservationSessionBean implements ReservationSessionBeanRemote, Res
     private EntityManager em;
 
     public boolean checkForAvailableRooms(String name, Date startDate, Date endDate, int numberOfRooms) throws RoomTypeNotFoundException { //check if roomtype can accomodate
-        List<Reservation> overlapReservations = em.createQuery( //retrieve list of reservations which dates overlap with the current reservation
-                "SELECT r FROM Reservation r WHERE r.startDate <= :endDate AND r.endDate >= :startDate", Reservation.class)
-                .setParameter("startDate", startDate)
-                .setParameter("endDate", endDate)
-                .getResultList();
-        int totalUsedRooms = 0;
-        if (overlapReservations != null) {
-            for (Reservation r : overlapReservations) { //number of rooms required by previous reservations
-                totalUsedRooms += r.getNumberOfRooms();
-            }
-        }
         RoomType rt = em.createQuery("SELECT rt FROM RoomType rt WHERE rt.name = :name", RoomType.class)
                 .setParameter("name", name)
                 .getSingleResult(); //retrieving RoomType
-        int numberOfAvailableRooms = 0;
         if (rt != null) {
+            List<Reservation> overlapReservations = em.createQuery(
+                    "SELECT r FROM Reservation r WHERE r.startDate <= :endDate AND r.endDate >= :startDate AND r.roomType = :roomType",
+                    Reservation.class)
+                    .setParameter("startDate", startDate)
+                    .setParameter("endDate", endDate)
+                    .setParameter("roomType", rt)
+                    .getResultList();
+            int totalUsedRooms = 0;
+            if (overlapReservations != null) {
+                for (Reservation r : overlapReservations) { //number of rooms required by previous reservations
+                    totalUsedRooms += r.getNumberOfRooms();
+                }
+            }
+            int numberOfAvailableRooms = 0;
             for (Room room : rt.getRooms()) { //counting number of isAvailable rooms under this roomtype
                 if (room.getIsAvailable()) {
                     numberOfAvailableRooms++;
@@ -83,7 +85,6 @@ public class ReservationSessionBean implements ReservationSessionBeanRemote, Res
     }
 
     public Reservation createReservation(Long guestId, String name, Date checkInDate, Date checkOutDate, int numberOfRooms, BigDecimal totalAmount) {
-        // Create a new reservation linked to the walk-in guest
         Guest guest = em.find(Guest.class, guestId); // returns Customer if finds customer;
         Reservation reservation = new Reservation(checkInDate, checkOutDate, numberOfRooms, totalAmount);
         RoomType rt = em.createQuery("SELECT rt FROM RoomType rt WHERE rt.name = :name", RoomType.class)
@@ -106,13 +107,10 @@ public class ReservationSessionBean implements ReservationSessionBeanRemote, Res
                 }
             }
         }
-
-        if (guest instanceof Customer) {
-            guest.getReservations().add(reservation); //add reservation to customer if guest is customer
-        }
+        guest.getReservations().add(reservation);
         em.persist(reservation); // Save the reservation
+        em.flush();
         return reservation;
     }
 
 }
-    

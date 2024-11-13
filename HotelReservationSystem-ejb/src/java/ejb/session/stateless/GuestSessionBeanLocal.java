@@ -4,6 +4,9 @@
  */
 package ejb.session.stateless;
 
+import entity.Guest;
+import exception.GeneralException;
+import exception.GuestExistException;
 import javax.ejb.Local;
 
 /**
@@ -12,5 +15,5 @@ import javax.ejb.Local;
  */
 @Local
 public interface GuestSessionBeanLocal {
-    
+    public Guest createNewGuest(Guest guest) throws GuestExistException, GeneralException;
 }

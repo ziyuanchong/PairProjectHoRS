@@ -50,7 +50,8 @@ public class PaymentSessionBean implements PaymentSessionBeanRemote, PaymentSess
                 calendar.add(Calendar.DAY_OF_MONTH, 1); //Go to next day 
             }
         }
-        return totalAmount;
+        BigDecimal bigDecimalValue = new BigDecimal(numberOfRooms);
+        return bigDecimalValue.multiply(totalAmount);
     }
 
     private RoomRate findRoomRate(List<RoomRate> roomRates, Date date) { //private method to get room rate on specific date for calculatePaymentForReservationClient
@@ -85,7 +86,8 @@ public class PaymentSessionBean implements PaymentSessionBeanRemote, PaymentSess
                 totalAmount = totalAmount.add(applicableRoomRate.getRatePerNight());
                 calendar.add(Calendar.DAY_OF_MONTH, 1);
             }
-            return totalAmount;
+            BigDecimal bigDecimalValue = new BigDecimal(numberOfRooms);
+            return bigDecimalValue.multiply(totalAmount);
         }
     }
 
