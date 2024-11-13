@@ -14,6 +14,7 @@ import entity.Employee;
 import entity.Room;
 import entity.RoomRate;
 import entity.RoomType;
+import exception.RoomTypeIsDisabledException;
 import exception.RoomTypeNotFoundException;
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -140,6 +141,8 @@ public class DataInitSessionBean {
             }
         } catch (RoomTypeNotFoundException ex) {
             System.out.println("An error occurred initializing rooms: " + ex.getMessage());
+        } catch (RoomTypeIsDisabledException e) {
+            System.out.println("An error occurred initializing rooms: " + e.getMessage());
         }
     }
 

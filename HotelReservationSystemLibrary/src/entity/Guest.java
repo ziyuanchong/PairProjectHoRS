@@ -50,13 +50,13 @@ public class Guest implements Serializable {
     @OneToMany(mappedBy = "guest")
     private List<Reservation> reservations = new ArrayList<>();
 
-    public Guest(String firstName, String lastName, String phoneNumber, String email, boolean checkIn) {
+    public Guest(String firstName, String lastName, String phoneNumber, String email) {
         this();
         this.firstName = firstName;
         this.lastName = lastName;
         this.phoneNumber = phoneNumber;
         this.email = email;
-        this.checkIn = checkIn;
+        this.checkIn = false;
     }
     
 

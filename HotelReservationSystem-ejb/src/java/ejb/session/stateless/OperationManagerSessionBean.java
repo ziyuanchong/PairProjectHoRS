@@ -14,6 +14,7 @@ import entity.Room;
 import entity.RoomRate;
 import entity.RoomType;
 import exception.RoomNotFoundException;
+import exception.RoomTypeIsDisabledException;
 import exception.RoomTypeNotFoundException;
 import java.math.BigDecimal;
 import java.util.Date;
@@ -118,11 +119,16 @@ public class OperationManagerSessionBean implements OperationManagerSessionBeanR
     }
 
     @Override
-    public Room createRoom(String roomNumber, boolean isAvailable, Long roomTypeId) throws RoomTypeNotFoundException {
+    public Room createRoom(String roomNumber, boolean isAvailable, Long roomTypeId) throws RoomTypeNotFoundException, RoomTypeIsDisabledException {
         RoomType roomType = em.find(RoomType.class, roomTypeId);
         if (roomType == null) {
             throw new IllegalArgumentException("RoomType not found with ID: " + roomTypeId);
         }
+
+        if (!roomType.isAvailable()) {
+            throw new RoomTypeIsDisabledException("RoomType is currently disabled and new rooms cannot be assigned");
+        }
+
         Room newRoom = new Room(roomNumber, isAvailable, roomType);
         em.persist(newRoom);
         return newRoom;

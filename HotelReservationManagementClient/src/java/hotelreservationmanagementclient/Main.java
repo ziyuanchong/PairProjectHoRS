@@ -10,11 +10,13 @@ import Enum.RoomTypeEnum;
 import ejb.session.stateless.EmployeeSessionBeanRemote;
 import ejb.session.stateless.GuestRelationOfficerSessionBeanRemote;
 import ejb.session.stateless.OperationManagerSessionBeanRemote;
+import ejb.session.stateless.PaymentSessionBeanRemote;
 import ejb.session.stateless.RoomAllocationSessionBeanRemote;
 import ejb.session.stateless.SalesManagerSessionBeanRemote;
 import ejb.session.stateless.SystemAdministratorSessionBeanRemote;
 import entity.Employee;
 import entity.ExceptionAllocationReport;
+import entity.Guest;
 import entity.Partner;
 import entity.Reservation;
 import entity.Room;
@@ -22,13 +24,16 @@ import entity.RoomRate;
 import entity.RoomType;
 import exception.EmployeeAlreadyLoggedInException;
 import exception.EmployeeNotFoundException;
+import exception.GeneralException;
 import exception.GuestCheckInException;
 import exception.GuestCheckOutException;
+import exception.GuestExistException;
 import exception.ReservationNotFoundException;
 import exception.ReservationUnavailableException;
 import exception.RoomNotAvailableException;
 import exception.RoomNotFoundException;
 import exception.RoomRateNotFoundException;
+import exception.RoomTypeIsDisabledException;
 import exception.RoomTypeNotFoundException;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
@@ -46,6 +51,9 @@ import javax.ejb.EJB;
  * @author ziyuanchong
  */
 public class Main {
+
+    @EJB
+    private static PaymentSessionBeanRemote paymentSessionBean;
 
     @EJB
     private static RoomAllocationSessionBeanRemote roomAllocationSessionBean;
@@ -371,7 +379,7 @@ public class Main {
         try {
             List<Partner> partners = systemAdministratorSessionBean.retrieveAllPartners();
             for (Partner partner : partners) {
-                System.out.println(partner);
+                System.out.println(partner.getPartnerId() + ". " + partner.getPartnerName());
             }
         } catch (Exception ex) {
             System.out.println("An error occurred while retrieving partners: " + ex.getMessage());
@@ -528,6 +536,8 @@ public class Main {
         try {
             Room newRoom = operationManagerSessionBean.createRoom(roomNumber, isAvailable, roomType.getRoomTypeId());
             System.out.println("Room created successfully with ID: " + newRoom.getRoomId());
+        } catch (RoomTypeIsDisabledException e) {
+            System.out.println("Failed to create room: " + e.getMessage());
         } catch (Exception ex) {
             System.out.println("Failed to create room: " + ex.getMessage());
         }
@@ -841,30 +851,42 @@ public class Main {
             if (availableRoomTypes.isEmpty()) {
                 System.out.println("No available rooms found for the specified dates.");
             } else {
-                System.out.printf("%-20s%-15s\n", "Room Type", "Published Rate");
+                System.out.printf("%-20s%-15s\n", "Room Type", "Total Cost");
                 System.out.println("---------------------------------------");
 
                 for (RoomType roomType : availableRoomTypes) {
-                    BigDecimal publishedRate = operationManagerSessionBean.getPublishedRate(roomType.getRoomTypeId());
-                    System.out.printf("%-20s%-15s\n", roomType.getName(), publishedRate);
+                    BigDecimal totalCost = paymentSessionBean.calculatePaymentForManagementClient(roomType.getName(), checkInDate, checkOutDate, numberOfRooms);
+                    System.out.printf("%-20s%-15s\n", roomType.getName(), totalCost);
                 }
             }
         } catch (ParseException e) {
             System.out.println("Invalid date format. Please enter the date in yyyy-MM-dd format.");
-        } catch (ReservationUnavailableException | RoomTypeNotFoundException ex) {
+        } catch (RoomRateNotFoundException | RoomTypeNotFoundException | ReservationUnavailableException ex) {
             System.out.println("An error occurred during room search: " + ex.getMessage());
         }
     }
 
 // Helper method to retrieve the prevailing published rate for a room type
-
-    private void walkInReserveRoom() {
+    private void walkInReserveRoom()  {
         System.out.println("*** Walk-in Reserve Room ***");
 
         try {
+            System.out.print("Enter Guest's First Name> ");
+            String firstName = sc.nextLine();
+            System.out.print("Enter Guest's Last Name> ");
+            String lastName = sc.nextLine();
+            System.out.print("Enter Guest's phone number: ");
+            String phoneNumber = sc.nextLine();
+            System.out.print("Enter Guest's email: ");
+            String email = sc.nextLine();
+            Guest guest;
+            if (!guestRelationOfficerSessionBean.checkIfGuestExists(email))  {
+                guest = guestRelationOfficerSessionBean.createNewGuest(firstName, lastName, phoneNumber, email);
+            } else {
+                guest = guestRelationOfficerSessionBean.retrieveGuestByEmail(email);
+            }
             System.out.print("Enter room type name (from search results)> ");
             String roomTypeName = sc.nextLine().trim();
-            RoomType roomType = operationManagerSessionBean.findRoomTypeByName(roomTypeName);
 
             System.out.print("Enter check-in date (yyyy-MM-dd)> ");
             String checkInDateInput = sc.nextLine().trim();
@@ -877,9 +899,9 @@ public class Main {
             System.out.print("Enter number of rooms to reserve> ");
             int numberOfRooms = sc.nextInt();
             sc.nextLine(); // consume newline
-
+            BigDecimal totalCost = paymentSessionBean.calculatePaymentForManagementClient(roomTypeName, checkOutDate, checkInDate, numberOfRooms);
             // Reserve the room
-            Reservation reservation = guestRelationOfficerSessionBean.walkInReserveRoom(roomType, numberOfRooms, checkInDate, checkOutDate);
+            Reservation reservation = guestRelationOfficerSessionBean.walkInReserveRoom(guest.getGuestId(), roomTypeName, checkInDate, checkOutDate, numberOfRooms, totalCost);
 
             System.out.println("Reservation successful! Reservation ID: " + reservation.getReservationId());
 
@@ -891,7 +913,7 @@ public class Main {
 
         } catch (ParseException e) {
             System.out.println("Invalid date format. Please enter the date in yyyy-MM-dd format.");
-        } catch (RoomTypeNotFoundException ex) {
+        } catch (RoomRateNotFoundException ex) {
             System.out.println("Room type not found: " + ex.getMessage());
         } catch (RoomNotAvailableException ex) {
             System.out.println("Unable to reserve room: " + ex.getMessage());

@@ -27,7 +27,7 @@ public class Customer extends Guest implements Serializable {
     }
 
     public Customer(String firstName, String lastName, String phoneNumber, String email, boolean checkIn, String password) {
-        super(firstName, lastName, phoneNumber, email,checkIn);
+        super(firstName, lastName, phoneNumber, email);
         this.password = password;
         
         

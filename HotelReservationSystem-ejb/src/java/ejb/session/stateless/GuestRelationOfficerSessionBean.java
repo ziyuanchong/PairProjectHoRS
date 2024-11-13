@@ -11,19 +11,25 @@ import entity.Reservation;
 import entity.ReservationRoom;
 import entity.Room;
 import entity.RoomType;
+import exception.GeneralException;
 import exception.GuestCheckInException;
 import exception.GuestCheckOutException;
+import exception.GuestExistException;
 import exception.ReservationNotFoundException;
 import exception.ReservationUnavailableException;
 import exception.RoomNotAvailableException;
 import exception.RoomTypeNotFoundException;
+import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceException;
+import javax.persistence.Query;
 
 /**
  *
@@ -31,6 +37,9 @@ import javax.persistence.PersistenceContext;
  */
 @Stateless
 public class GuestRelationOfficerSessionBean implements GuestRelationOfficerSessionBeanRemote, GuestRelationOfficerSessionBeanLocal {
+
+    @EJB
+    private ReservationSessionBeanLocal reservationSessionBean;
 
     @EJB
     private RoomAllocationSessionBeanLocal roomAllocationSessionBean;
@@ -47,17 +56,34 @@ public class GuestRelationOfficerSessionBean implements GuestRelationOfficerSess
         try {
             return reservationSessionBeanLocal.retrieveListOfAvailableRoomType(checkOutDate, checkInDate, numberOfRooms);
         } catch (ReservationUnavailableException e) {
-            throw new ReservationUnavailableException("Reservation cannot be created");
+            throw new ReservationUnavailableException("There are not enough rooms for the dates provided");
         } catch (RoomTypeNotFoundException ex) {
             throw new RoomTypeNotFoundException("There are no available rooms");
         }
     }
 
+    public Guest createNewGuest(String firstName, String lastName, String phoneNumber, String email) {
+        Guest guest = new Guest(firstName, lastName, phoneNumber, email);
+        em.persist(guest);
+        em.flush();
+        return guest;
+    }
+
+    public boolean checkIfGuestExists(String email) {
+        try {
+            Guest guest = em.createQuery("SELECT g FROM Guest g WHERE g.email = :email", Guest.class)
+                    .setParameter("email", email)
+                    .getSingleResult();
+        } catch (NoResultException ex) {
+            return false;
+        }
+        return true;
+    }
 //use case 24: walk in reserve room
+
     @Override
-    public Reservation walkInReserveRoom(RoomType roomType, int numberOfRooms, Date checkInDate, Date checkOutDate) throws RoomNotAvailableException {
-        Reservation reservation = new Reservation(checkInDate, checkOutDate, numberOfRooms, roomType);
-        em.persist(reservation);
+    public Reservation walkInReserveRoom(Long guestId, String name, Date checkInDate, Date checkOutDate, int numberOfRooms, BigDecimal totalAmount) throws RoomNotAvailableException {
+        Reservation reservation = reservationSessionBean.createReservation(guestId, name, checkInDate, checkOutDate, numberOfRooms, totalAmount);
 
         // Check if it's a same-day check-in after 2 a.m.
         if (isSameDay(checkInDate, new Date()) && isAfter2AM(new Date())) {
@@ -209,4 +235,9 @@ public class GuestRelationOfficerSessionBean implements GuestRelationOfficerSess
 
     // Add business logic below. (Right-click in editor and choose
     // "Insert Code > Add Business Method")
+    public Guest retrieveGuestByEmail(String email) {
+        return em.createQuery("SELECT g FROM Guest g WHERE g.email = :email", Guest.class)
+                .setParameter("email", email)
+                .getSingleResult();
+    }
 }
