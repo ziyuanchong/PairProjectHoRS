@@ -30,7 +30,7 @@ public class GuestSessionBean implements GuestSessionBeanRemote, GuestSessionBea
             query.setParameter("email", guest.getEmail());
             
             if (!query.getResultList().isEmpty()) {
-                throw new GuestExistException("A guest with the same email already exists.");
+                return (Guest) query.getSingleResult();
             }
             
             em.persist(guest);

@@ -10,6 +10,7 @@ import entity.ExceptionAllocationReport;
 import entity.Room;
 import entity.RoomType;
 import exception.RoomNotFoundException;
+import exception.RoomTypeIsDisabledException;
 import exception.RoomTypeNotFoundException;
 import java.math.BigDecimal;
 import java.util.List;
@@ -29,7 +30,7 @@ public interface OperationManagerSessionBeanLocal {
 
     public RoomType updateRoomType(RoomType updatedRoomType) throws RoomTypeNotFoundException;
 
-    public Room createRoom(String roomNumber, boolean isAvailable, Long roomTypeId) throws RoomTypeNotFoundException;
+    public Room createRoom(String roomNumber, boolean isAvailable, Long roomTypeId) throws RoomTypeNotFoundException, RoomTypeIsDisabledException;
 
     public Room updateRoom(Long roomId, String roomNumber, boolean isAvailable, Long roomTypeId) throws RoomNotFoundException, RoomTypeNotFoundException;
 

@@ -8,8 +8,10 @@ import entity.Guest;
 import entity.Reservation;
 import entity.Room;
 import entity.RoomType;
+import exception.GeneralException;
 import exception.GuestCheckInException;
 import exception.GuestCheckOutException;
+import exception.GuestExistException;
 import exception.ReservationNotFoundException;
 import exception.ReservationUnavailableException;
 import exception.RoomNotAvailableException;
@@ -28,11 +30,17 @@ public interface GuestRelationOfficerSessionBeanRemote {
 
     public List<RoomType> searchAvailableRooms(Date checkInDate, Date checkOutDate, int numRooms) throws ReservationUnavailableException, RoomTypeNotFoundException;
 
-    public Reservation walkInReserveRoom(RoomType roomType, int numberOfRooms, Date checkInDate, Date checkOutDate) throws RoomNotAvailableException;
-
     public void checkInGuest(Long reservationId) throws ReservationNotFoundException, GuestCheckInException;
 
     public void checkOutGuestByRoomNumber(String roomNumber) throws ReservationNotFoundException, GuestCheckOutException;
 
     public void checkOutGuest(Long reservationId) throws ReservationNotFoundException, GuestCheckOutException;
+
+    public Guest createNewGuest(String firstName, String lastName, String phoneNumber, String email);
+
+    public Reservation walkInReserveRoom(Long guestId, String name, Date checkInDate, Date checkOutDate, int numberOfRooms, BigDecimal totalAmount) throws RoomNotAvailableException;
+
+    public boolean checkIfGuestExists(String email);
+
+    public Guest retrieveGuestByEmail(String email);
 }
