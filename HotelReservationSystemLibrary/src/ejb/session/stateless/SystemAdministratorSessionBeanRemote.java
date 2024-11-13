@@ -22,7 +22,7 @@ public interface SystemAdministratorSessionBeanRemote {
     
     public List<Employee> retrieveAllEmployees();
     
-    public Partner createPartner(String partnerName, String password);
+    public Partner createPartner(String partnerName,String username, String password);
     
     public List<Partner> retrieveAllPartners();
     

@@ -46,8 +46,8 @@ public class SystemAdministratorSessionBean implements SystemAdministratorSessio
         return em.createQuery("SELECT e FROM Employee e", Employee.class).getResultList();
     }
 
-    public Partner createPartner(String partnerName, String password) {
-        Partner newPartner = new Partner(partnerName, password);
+    public Partner createPartner(String partnerName,String username, String password) {
+        Partner newPartner = new Partner(partnerName,username, password);
         em.persist(newPartner);
         return newPartner;
     }

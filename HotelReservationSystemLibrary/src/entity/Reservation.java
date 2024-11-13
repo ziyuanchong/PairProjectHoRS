@@ -19,6 +19,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -36,19 +37,25 @@ public class Reservation implements Serializable {
     @Temporal(TemporalType.DATE)
     private Date endDate;
     private int numberOfRooms;
-    
+
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(nullable = false)
     private Guest guest;
-    
+
     private BigDecimal totalAmount;
-    
+
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(nullable = false)
     private RoomType roomType;
 
     @OneToMany(mappedBy = "reservation")
     private List<ReservationRoom> reservationRooms;
+
+    private boolean bookingByPartner;
+
+    @ManyToOne
+    @XmlTransient
+    private Partner partner;
 
     public Reservation() {
         this.reservationRooms = new ArrayList<>();
@@ -60,6 +67,7 @@ public class Reservation implements Serializable {
         this.endDate = endDate;
         this.numberOfRooms = numberOfRooms;
         this.totalAmount = totalAmount;
+        this.bookingByPartner = false;
     }
 
     public Reservation(Date startDate, Date endDate, int numberOfRooms, RoomType roomType) {
@@ -67,10 +75,27 @@ public class Reservation implements Serializable {
         this.endDate = endDate;
         this.numberOfRooms = numberOfRooms;
         this.roomType = roomType;
+        this.bookingByPartner = false;
+    }
+
+    public Partner getPartner() {
+        return partner;
+    }
+
+    public void setPartner(Partner partner) {
+        this.partner = partner;
     }
 
     public BigDecimal getTotalAmount() {
         return totalAmount;
+    }
+
+    public boolean isBookingByPartner() {
+        return bookingByPartner;
+    }
+
+    public void setBookingByPartner(boolean bookingByPartner) {
+        this.bookingByPartner = bookingByPartner;
     }
 
     public void setTotalAmount(BigDecimal totalAmount) {

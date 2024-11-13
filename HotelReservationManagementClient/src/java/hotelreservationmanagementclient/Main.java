@@ -355,11 +355,13 @@ public class Main {
         System.out.println("*** Create New Partner ***");
         System.out.print("Enter partner name> ");
         String partnerName = sc.nextLine().trim();
+        System.out.print("Enter username> ");
+        String username = sc.nextLine().trim();
         System.out.print("Enter password> ");
         String password = sc.nextLine().trim();
 
         try {
-            Partner newPartner = systemAdministratorSessionBean.createPartner(partnerName, password);
+            Partner newPartner = systemAdministratorSessionBean.createPartner(partnerName,username, password);
             System.out.println("Partner created successfully with ID: " + newPartner.getPartnerId());
         } catch (Exception ex) {
             System.out.println("Failed to create partner: " + ex.getMessage());
