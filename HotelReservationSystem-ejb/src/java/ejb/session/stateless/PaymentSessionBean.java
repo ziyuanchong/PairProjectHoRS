@@ -70,7 +70,7 @@ public class PaymentSessionBean implements PaymentSessionBeanRemote, PaymentSess
         return newRate.getRateType().ordinal() > currentBestRate.getRateType().ordinal();
     }
 
-    public BigDecimal calculatePaymentForManagementClient(String name, Date startDate, Date endDate, int numberOfRooms) throws RoomRateNotFoundException { //payment for walkin guests
+    public BigDecimal calculatePaymentForManagementClient(String name, Date startDate, Date endDate, int numberOfRooms) throws RoomRateNotFoundException {
         RoomType rt = em.createQuery("SELECT rt FROM RoomType rt WHERE rt.name = :name", RoomType.class)
                 .setParameter("name", name)
                 .getSingleResult();

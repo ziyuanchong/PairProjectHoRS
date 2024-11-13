@@ -369,7 +369,7 @@ public class Main {
         String password = sc.nextLine().trim();
 
         try {
-            Partner newPartner = systemAdministratorSessionBean.createPartner(partnerName,username, password);
+            Partner newPartner = systemAdministratorSessionBean.createPartner(partnerName, username, password);
             System.out.println("Partner created successfully with ID: " + newPartner.getPartnerId());
         } catch (Exception ex) {
             System.out.println("Failed to create partner: " + ex.getMessage());
@@ -869,7 +869,7 @@ public class Main {
     }
 
 // Helper method to retrieve the prevailing published rate for a room type
-    private void walkInReserveRoom()  {
+    private void walkInReserveRoom() {
         System.out.println("*** Walk-in Reserve Room ***");
 
         try {
@@ -882,7 +882,7 @@ public class Main {
             System.out.print("Enter Guest's email: ");
             String email = sc.nextLine();
             Guest guest;
-            if (!guestRelationOfficerSessionBean.checkIfGuestExists(email))  {
+            if (!guestRelationOfficerSessionBean.checkIfGuestExists(email)) {
                 guest = guestRelationOfficerSessionBean.createNewGuest(firstName, lastName, phoneNumber, email);
             } else {
                 guest = guestRelationOfficerSessionBean.retrieveGuestByEmail(email);
@@ -901,11 +901,12 @@ public class Main {
             System.out.print("Enter number of rooms to reserve> ");
             int numberOfRooms = sc.nextInt();
             sc.nextLine(); // consume newline
-            BigDecimal totalCost = paymentSessionBean.calculatePaymentForManagementClient(roomTypeName, checkOutDate, checkInDate, numberOfRooms);
+            BigDecimal totalCost = paymentSessionBean.calculatePaymentForManagementClient(roomTypeName, checkInDate, checkOutDate, numberOfRooms);
             // Reserve the room
             Reservation reservation = guestRelationOfficerSessionBean.walkInReserveRoom(guest.getGuestId(), roomTypeName, checkInDate, checkOutDate, numberOfRooms, totalCost);
 
-            System.out.println("Reservation successful! Reservation ID: " + reservation.getReservationId());
+            System.out.println("Reservation successful! Reservation ID: " + reservation.getReservationId()
+                    + ", Total Amount: " + totalCost);
 
             // Check for same-day check-in after 2 a.m.
             if (isSameDay(checkInDate, new Date()) && isAfter2AM(new Date())) {

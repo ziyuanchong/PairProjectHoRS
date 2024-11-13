@@ -4,7 +4,6 @@
  */
 package ejb.session.stateless;
 
-import entity.Customer;
 import entity.Guest;
 import entity.Reservation;
 import entity.ReservationRoom;
@@ -14,6 +13,7 @@ import exception.ReservationUnavailableException;
 import exception.RoomTypeNotFoundException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.Stateless;
@@ -30,10 +30,14 @@ public class ReservationSessionBean implements ReservationSessionBeanRemote, Res
     @PersistenceContext(unitName = "HotelReservationSystem-ejbPU")
     private EntityManager em;
 
-    public boolean checkForAvailableRooms(String name, Date startDate, Date endDate, int numberOfRooms) throws RoomTypeNotFoundException { //check if roomtype can accomodate
+    @Override
+    public boolean checkForAvailableRooms(String name, Date startDate, Date endDate, int numberOfRooms) throws RoomTypeNotFoundException {
+        System.out.println("Checking available rooms for RoomType: " + name + " from " + startDate + " to " + endDate);
+
         RoomType rt = em.createQuery("SELECT rt FROM RoomType rt WHERE rt.name = :name", RoomType.class)
                 .setParameter("name", name)
-                .getSingleResult(); //retrieving RoomType
+                .getSingleResult();
+
         if (rt != null) {
             List<Reservation> overlapReservations = em.createQuery(
                     "SELECT r FROM Reservation r WHERE r.startDate <= :endDate AND r.endDate >= :startDate AND r.roomType = :roomType",
@@ -42,25 +46,24 @@ public class ReservationSessionBean implements ReservationSessionBeanRemote, Res
                     .setParameter("endDate", endDate)
                     .setParameter("roomType", rt)
                     .getResultList();
-            int totalUsedRooms = 0;
-            if (overlapReservations != null) {
-                for (Reservation r : overlapReservations) { //number of rooms required by previous reservations
-                    totalUsedRooms += r.getNumberOfRooms();
-                }
-            }
-            int numberOfAvailableRooms = 0;
-            for (Room room : rt.getRooms()) { //counting number of isAvailable rooms under this roomtype
-                if (room.getIsAvailable()) {
-                    numberOfAvailableRooms++;
-                }
-            }
 
-            if (numberOfAvailableRooms - totalUsedRooms - numberOfRooms >= 0) { //if there are enough rooms, return true
+            System.out.println("Found " + overlapReservations.size() + " overlapping reservations for RoomType: " + name);
+
+            int roomsInUse = overlapReservations.stream().mapToInt(Reservation::getNumberOfRooms).sum();
+            System.out.println("Total rooms in use for overlapping dates: " + roomsInUse);
+
+            int totalAvailableRooms = (int) rt.getRooms().stream().filter(Room::getIsAvailable).count();
+            System.out.println("Total available rooms in inventory for " + name + ": " + totalAvailableRooms);
+
+            if (totalAvailableRooms - roomsInUse >= numberOfRooms) {
+                System.out.println("RoomType " + name + " has sufficient availability.");
                 return true;
+            } else {
+                System.out.println("RoomType " + name + " does not have enough rooms available.");
+                return false;
             }
-            return false;
         } else {
-            throw new RoomTypeNotFoundException("This roomtype does not exist");
+            throw new RoomTypeNotFoundException("This room type does not exist: " + name);
         }
     }
 
@@ -101,8 +104,10 @@ public class ReservationSessionBean implements ReservationSessionBeanRemote, Res
                         ReservationRoom reservationRoom = new ReservationRoom();
                         reservationRoom.setRoom(room);
                         reservationRoom.setReservation(reservation);
-                        reservation.getReservationRooms().add(reservationRoom); //add reservation room into reservation
-                        em.persist(reservationRoom); //save new reservationroom
+                        reservation.getReservationRooms().add(reservationRoom);
+                        //add reservation room into reservation
+                        em.persist(reservationRoom);
+                        em.flush();//save new reservationroom
                     }
                 }
             }

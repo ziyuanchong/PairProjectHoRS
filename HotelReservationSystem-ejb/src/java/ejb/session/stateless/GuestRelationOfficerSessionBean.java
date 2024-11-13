@@ -54,7 +54,7 @@ public class GuestRelationOfficerSessionBean implements GuestRelationOfficerSess
     @Override
     public List<RoomType> searchAvailableRooms(Date checkInDate, Date checkOutDate, int numberOfRooms) throws ReservationUnavailableException, RoomTypeNotFoundException {
         try {
-            return reservationSessionBeanLocal.retrieveListOfAvailableRoomType(checkOutDate, checkInDate, numberOfRooms);
+            return reservationSessionBeanLocal.retrieveListOfAvailableRoomType(checkInDate, checkOutDate, numberOfRooms);
         } catch (ReservationUnavailableException e) {
             throw new ReservationUnavailableException("There are not enough rooms for the dates provided");
         } catch (RoomTypeNotFoundException ex) {
