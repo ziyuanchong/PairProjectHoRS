@@ -58,6 +58,7 @@ public class RoomType implements Serializable {
     private String nextHigherRoomType;
 
     @OneToMany(mappedBy = "roomType", cascade = CascadeType.ALL)
+    @XmlTransient
     private List<Reservation> reservations = new ArrayList<>();
 
     @OneToMany(mappedBy = "roomType")

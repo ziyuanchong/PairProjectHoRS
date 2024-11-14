@@ -39,7 +39,7 @@ public class ExceptionAllocationReport implements Serializable {
     private String roomTypeRequested;
     
     @OneToOne
-    @JoinColumn(name = "reservation_room_id", nullable = false, unique= true)
+    @JoinColumn(name = "reservation_room_id", unique= true)
     private ReservationRoom reservationRoom;
 
     public ExceptionAllocationReport() {

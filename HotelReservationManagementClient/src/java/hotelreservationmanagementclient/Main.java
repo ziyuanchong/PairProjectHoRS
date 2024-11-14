@@ -138,6 +138,8 @@ public class Main {
                 System.out.println("4: View All Employees");
                 System.out.println("5: Create New Partner");
                 System.out.println("6: View All Partners");
+                System.out.println("22: Allocate Room Mamually");
+
                 break;
 
             case OPERATIONMANAGER:
@@ -321,8 +323,9 @@ public class Main {
                 }
                 break;
             case 26:
-                System.out.println("Exiting...");
-                System.exit(0);
+                if (currentEmployee.getEmployeeEnum() == EmployeeEnum.GUESTRELATIONOFFICER) {
+                    checkOutGuest();
+                }
                 break;
 
             default:
@@ -637,18 +640,16 @@ public class Main {
         if (reports.isEmpty()) {
             System.out.println("No room allocation exceptions found.");
         } else {
-            System.out.printf("%-25s%-30s%-20s%-20s\n", "Exception Date", "Exception Type", "Room Type Requested", "Reservation Room");
+            System.out.printf("%-25s%-30s%-20s\n", "Exception Date", "Exception Type", "Room Type Requested");
             System.out.println("---------------------------------------------------------------------------------------------");
 
             reports.forEach(report -> {
                 String exceptionDate = (report.getGeneratedAt() != null) ? report.getGeneratedAt().toString() : "N/A";
                 String exceptionType = (report.getExceptionType() != null) ? report.getExceptionType().name() : "N/A";
                 String roomTypeRequested = (report.getRoomTypeRequested() != null) ? report.getRoomTypeRequested() : "N/A";
-                String reservationRoom = (report.getReservationRoom() != null && report.getReservationRoom().getRoom() != null)
-                        ? report.getReservationRoom().getRoom().getRoomNumber()
-                        : "N/A";
+                
 
-                System.out.printf("%-25s%-30s%-20s%-20s\n", exceptionDate, exceptionType, roomTypeRequested, reservationRoom);
+                System.out.printf("%-25s%-30s%-20s\n", exceptionDate, exceptionType, roomTypeRequested);
             });
         }
     }
@@ -876,10 +877,10 @@ public class Main {
                 System.out.println("---------------------------------------");
 
                 for (RoomType roomType : availableRoomTypes) {
-                    try{
-                     BigDecimal totalCost = paymentSessionBean.calculatePaymentForManagementClient(roomType.getName(), checkInDate, checkOutDate, numberOfRooms);
-                     System.out.printf("%-20s%-15s\n", roomType.getName(), totalCost);
-                
+                    try {
+                        BigDecimal totalCost = paymentSessionBean.calculatePaymentForManagementClient(roomType.getName(), checkInDate, checkOutDate, numberOfRooms);
+                        System.out.printf("%-20s%-15s\n", roomType.getName(), totalCost);
+
                     } catch (RoomRateNotFoundException ex) {
                         System.out.printf("%-20s%-15s\n", roomType.getName(), "NOT AVAILABLE");
                     }
@@ -887,7 +888,7 @@ public class Main {
             }
         } catch (ParseException e) {
             System.out.println("Invalid date format. Please enter the date in yyyy-MM-dd format.");
-        } catch ( RoomTypeNotFoundException | ReservationUnavailableException ex) {
+        } catch (RoomTypeNotFoundException | ReservationUnavailableException ex) {
             System.out.println("An error occurred during room search: " + ex.getMessage());
         }
     }
@@ -933,14 +934,14 @@ public class Main {
                 System.out.println("---------------------------------------");
 
                 for (RoomType roomType : availableRoomTypes) {
-                    try{
-                     BigDecimal totalCost = paymentSessionBean.calculatePaymentForManagementClient(roomType.getName(), checkInDate, checkOutDate, numberOfRooms);
-                     System.out.printf("%-20s%-15s\n", roomType.getName(), totalCost);
-                
+                    try {
+                        BigDecimal totalCost = paymentSessionBean.calculatePaymentForManagementClient(roomType.getName(), checkInDate, checkOutDate, numberOfRooms);
+                        System.out.printf("%-20s%-15s\n", roomType.getName(), totalCost);
+
                     } catch (RoomRateNotFoundException ex) {
                         System.out.printf("%-20s%-15s\n", roomType.getName(), "NOT AVAILABLE");
                     }
-                } 
+                }
             }
 
             System.out.print("Enter room type name (from search results)> ");

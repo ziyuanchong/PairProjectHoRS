@@ -54,6 +54,7 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
      *
      */
     public List<ExceptionAllocationReport> allocateRoomsForDate(Date date) {
+        System.out.println("Starting allocateRoomsForDate with date: " + date);
         Date checkInDate = stripTime(date);
         List<ExceptionAllocationReport> exceptionReports = new ArrayList<>();
 
@@ -62,11 +63,17 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
                 .setParameter("checkInDate", checkInDate)
                 .getResultList();
 
-        reservationsForDate.forEach(reservation -> {
-            for (int i = 0; i < reservation.getNumberOfRooms(); i++) {
-                Room allocatedRoom = allocateRoomToReservation(reservation);
+        System.out.println("Found " + reservationsForDate.size() + " reservations for date: " + checkInDate);
 
+        reservationsForDate.forEach(reservation -> {
+            System.out.println("Processing reservation ID: " + reservation.getReservationId());
+
+            for (int i = 0; i < reservation.getNumberOfRooms(); i++) {
+                System.out.println("Allocating room " + (i + 1) + " for reservation ID: " + reservation.getReservationId());
+
+                Room allocatedRoom = allocateRoomToReservation(reservation);
                 if (allocatedRoom != null) {
+                    System.out.println("Room allocated: " + allocatedRoom.getRoomId());
                     allocatedRoom.setIsAllocated(true);
                     em.merge(allocatedRoom);
 
@@ -76,9 +83,11 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
                     reservation.getReservationRooms().add(reservationRoom);
                     em.merge(reservation);
                 } else {
-                    Room upgradedRoom = allocateUpgradeRoom(reservation);
+                    System.out.println("No room available, attempting to allocate upgrade for reservation ID: " + reservation.getReservationId());
 
+                    Room upgradedRoom = allocateUpgradeRoom(reservation);
                     if (upgradedRoom != null) {
+                        System.out.println("Upgraded room allocated: " + upgradedRoom.getRoomId());
                         upgradedRoom.setIsAllocated(true);
                         em.merge(upgradedRoom);
 
@@ -94,15 +103,19 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
                                 reservation.getRoomType().getName(),
                                 reservationRoom
                         );
+                        System.out.println("Creating upgrade exception report: " + report);
                         em.persist(report);
                         exceptionReports.add(report);
                     } else {
+                        System.out.println("No upgraded room available for reservation ID: " + reservation.getReservationId());
+
                         ExceptionAllocationReport report = new ExceptionAllocationReport(
                                 AllocationExceptionTypeEnum.NO_ROOM_AVAILABLE,
                                 new Date(),
-                                reservation.getRoomType().getName(),
+                                reservation.getRoomType() != null ? reservation.getRoomType().getName() : "Unknown Room Type",
                                 null
                         );
+                        System.out.println("Creating no-room-available exception report: " + report);
                         em.persist(report);
                         exceptionReports.add(report);
                     }
@@ -110,6 +123,7 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
             }
         });
 
+        System.out.println("Finished allocateRoomsForDate with exception reports count: " + exceptionReports.size());
         return exceptionReports;
     }
 
@@ -130,25 +144,22 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
             RoomType requestedRoomType = reservation.getRoomType();
             String nextHigherRoomTypeName = requestedRoomType.getNextHigherRoomType();
 
-            while (nextHigherRoomTypeName != null) {
-                RoomType nextHigherRoomType = em.createQuery(
-                        "SELECT rt FROM RoomType rt WHERE rt.name = :name", RoomType.class)
-                        .setParameter("name", nextHigherRoomTypeName)
-                        .getSingleResult();
+            RoomType nextHigherRoomType = em.createQuery(
+                    "SELECT rt FROM RoomType rt WHERE rt.name = :name", RoomType.class)
+                    .setParameter("name", nextHigherRoomTypeName)
+                    .getSingleResult();
 
-                Room availableRoom = em.createQuery(
-                        "SELECT r FROM Room r WHERE r.roomType = :roomType AND r.isAllocated = false AND r.isAvailable = true", Room.class)
-                        .setParameter("roomType", nextHigherRoomType)
-                        .setMaxResults(1)
-                        .getSingleResult();
+            Room availableRoom = em.createQuery(
+                    "SELECT r FROM Room r WHERE r.roomType = :roomType AND r.isAllocated = false AND r.isAvailable = true", Room.class)
+                    .setParameter("roomType", nextHigherRoomType)
+                    .setMaxResults(1)
+                    .getSingleResult();
 
-                if (availableRoom != null) {
-                    return availableRoom;
-                }
-
-                // Move to the next higher room type if current one is full
-                nextHigherRoomTypeName = nextHigherRoomType.getNextHigherRoomType();
+            if (availableRoom != null) {
+                return availableRoom;
             }
+
+            // Move to the next higher room type if current one is full
             return null;
 
         } catch (NoResultException ex) {

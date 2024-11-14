@@ -16,7 +16,6 @@ import exception.PartnerNotFoundException;
 import exception.ReservationNotFoundException;
 import exception.ReservationUnavailableException;
 import exception.RoomTypeNotFoundException;
-import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -49,24 +48,61 @@ public class HolidayWebService {
     @WebMethod(operationName = "loginPartner")
     public Partner loginPartner(@WebParam(name = "username") String username, @WebParam(name = "password") String password)
             throws InvalidPartnerInfoException {
-        return partnerSessionBean.loginPartner(username, password);
-    }
+        Partner partner = partnerSessionBean.loginPartner(username, password);
 
-    /*@WebMethod(operationName = "searchAvailableRoomTypes")
-    public List<RoomType> searchAvailableRoomTypes(@WebParam(name = "startDate") Date startDate,
-            @WebParam(name = "endDate") Date endDate,
-            @WebParam(name = "numberOfRooms") int numberOfRooms)
-            throws ReservationUnavailableException {
-        List<RoomType> roomTypes = partnerSessionBean.searchAvailableRoomTypes(startDate, endDate, numberOfRooms);
+        // Detach the partner entity and clear cyclic references in associated entities
+        em.detach(partner);
+        partner.getReservations().forEach(reservation -> {
+            em.detach(reservation);
+            reservation.setPartner(null);  // Break cycle with Partner
 
-        //Access lazy-loaded fields before returning, if needed
-          roomTypes.forEach(roomType -> {
-            roomType.getRoomRates().size(); // Ensure room rates are loaded
-    // Access other fields if necessary
+            // Handle RoomType in Reservation and break any cycles
+            RoomType roomType = reservation.getRoomType();
+            if (roomType != null) {
+                em.detach(roomType);
+                roomType.setReservations(null);  // Clear back-reference to Reservation
+                roomType.setNextHigherRoomType(null);
+                roomType.setRooms(null);// Clear self-referencing field
+
+                // Detach and clear RoomRates in RoomType to prevent cycles
+                roomType.getRoomRates().forEach(roomRate -> {
+                    em.detach(roomRate);
+                    roomRate.setRoomType(null);  // Break cycle with RoomType in RoomRate
+                });
+
+                reservation.setRoomType(null);  // Ensure RoomType is detached from Reservation to avoid a cycle
+            }
+
+            // Handle RoomRates in Reservation and clear any RoomType references
+            reservation.getApplicableRoomRates().forEach(roomRate -> {
+                em.detach(roomRate);
+                roomRate.setRoomType(null);  // Break cycle with RoomType in RoomRate
+            });
+
+            // Detach ReservationRooms in Reservation and associated Room entities
+            reservation.getReservationRooms().forEach(reservationRoom -> {
+                em.detach(reservationRoom);
+                reservationRoom.setReservation(null);  // Break cycle with Reservation
+
+                Room room = reservationRoom.getRoom();
+                if (room != null) {
+                    em.detach(room);
+                    room.setRoomType(null);  // Break cycle with RoomType in Room
+                }
+            });
+
+            // Handle Guest in Reservation to prevent cycles
+            Guest guest = reservation.getGuest();
+            if (guest != null) {
+                em.detach(guest);
+                guest.getReservations().clear();  // Clear guest's reservations to prevent cycles
+                reservation.setGuest(null);  // Break cycle with Guest
+            }
         });
-        return roomTypes;
+
+        return partner;
     }
-    **/
+
     @WebMethod(operationName = "searchAvailableRoomTypes")
     public List<RoomType> searchAvailableRoomTypes(@WebParam(name = "startDate") String startDate,
             @WebParam(name = "endDate") String endDate,
@@ -79,29 +115,16 @@ public class HolidayWebService {
 
             List<RoomType> roomTypes = partnerSessionBean.searchAvailableRoomTypes(parsedStartDate, parsedEndDate, numberOfRooms);
 
-            // Detach entities and remove bidirectional references to avoid cyclic issues
+            // Detach and remove bidirectional references
             for (RoomType roomType : roomTypes) {
                 em.detach(roomType);
 
-                for (Room room : roomType.getRooms()) {
-                    em.detach(room);
-                    room.setRoomType(null); // Break cycle with RoomType
-                }
-
+                // Break cycle with Room entities
+                roomType.setRooms(null); // Detach entire room list instead of individual entities
+                roomType.setReservations(null); // Detach entire reservation list
                 for (RoomRate roomRate : roomType.getRoomRates()) {
                     em.detach(roomRate);
-                    roomRate.setRoomType(null); // Break cycle with RoomType
-                }
-
-                for (Reservation reservation : roomType.getReservations()) {
-                    em.detach(reservation);
-
-                    Guest guest = reservation.getGuest();
-                    if (guest != null) {
-                        em.detach(guest);
-                        guest.getReservations().clear(); // Clear guest's reservation list to avoid cycle
-                        reservation.setGuest(null); // Break cycle with Guest
-                    }
+                    roomRate.setRoomType(null); // Break cycle with RoomType in RoomRate
                 }
             }
 
@@ -112,43 +135,170 @@ public class HolidayWebService {
         }
     }
 
-
-    /*@WebMethod(operationName = "searchAvailableRoomTypes")
-    public String searchAvailableRoomTypes(
-            @WebParam(name = "startDate") String startDate,
-            @WebParam(name = "endDate") String endDate,
-            @WebParam(name = "numberOfRooms") int numberOfRooms) {
-        return "Testing successful";  // Temporary return for debugging
-    }
-**/
     @WebMethod(operationName = "reserveRoom")
-    public Reservation reserveRoom(@WebParam(name = "partnerId") Long partnerId,
+    public Reservation reserveRoom(
+            @WebParam(name = "partnerId") Long partnerId,
             @WebParam(name = "roomTypeName") String roomTypeName,
-            @WebParam(name = "checkInDate") Date checkInDate,
-            @WebParam(name = "checkOutDate") Date checkOutDate,
-            @WebParam(name = "numberOfRooms") int numberOfRooms,
-            @WebParam(name = "totalAmount") BigDecimal totalAmount)
+            @WebParam(name = "checkInDate") String checkInDate,
+            @WebParam(name = "checkOutDate") String checkOutDate,
+            @WebParam(name = "numberOfRooms") int numberOfRooms)
             throws RoomTypeNotFoundException, ReservationUnavailableException, PartnerNotFoundException {
-        return partnerSessionBean.reserveRoom(partnerId, roomTypeName, checkInDate, checkOutDate, numberOfRooms, totalAmount);
+
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+
+        try {
+            Date parsedCheckInDate = formatter.parse(checkInDate);
+            Date parsedCheckOutDate = formatter.parse(checkOutDate);
+
+            // Fetch reservation via session bean
+            Reservation reservation = partnerSessionBean.reserveRoom(
+                    partnerId, roomTypeName, parsedCheckInDate, parsedCheckOutDate, numberOfRooms);
+
+            // Detach reservation and associated entities to avoid cycles
+            if (reservation != null) {
+                em.detach(reservation);
+                reservation.setPartner(null);  // Break cycle with Partner
+
+                // Detach and clean up RoomType entity
+                RoomType roomType = reservation.getRoomType();
+                if (roomType != null) {
+                    em.detach(roomType);
+
+                    if (roomType.getRooms() != null) {
+                        roomType.getRooms().forEach(room -> {
+                            em.detach(room);
+                            room.setRoomType(null);  // Break cycle with RoomType in Room
+                        });
+                    }
+
+                    if (roomType.getRoomRates() != null) {
+                        roomType.getRoomRates().forEach(roomRate -> {
+                            em.detach(roomRate);
+                            roomRate.setRoomType(null); // Break cycle with RoomType in RoomRate
+                        });
+                    }
+
+                    roomType.setReservations(null);
+                }
+
+                // Break cycles for other entities if needed (e.g., Guest, ReservationRoom)
+                Guest guest = reservation.getGuest();
+                if (guest != null) {
+                    em.detach(guest);
+                    guest.getReservations().clear(); // Clear guest's reservations to prevent cycles
+                    reservation.setGuest(null); // Break cycle with Guest
+                }
+            }
+
+            return reservation;
+
+        } catch (ParseException e) {
+            throw new ReservationUnavailableException("Invalid date format. Please use 'yyyy-MM-dd'.");
+        }
     }
 
+    /**
+     * Helper method to detach Reservation and associated entities, breaking
+     * cycles.
+     */
     @WebMethod(operationName = "viewPartnerReservation")
     public Reservation viewPartnerReservation(@WebParam(name = "reservationId") Long reservationId)
             throws ReservationNotFoundException {
+        // Retrieve the reservation via session bean
         Reservation reservation = partnerSessionBean.viewPartnerReservation(reservationId);
-        reservation.getRoomType().getRoomRates().size();  // Ensure lazy fields are loaded
-        reservation.getReservationRooms().size();
+        em.detach(reservation);
+
+        // Break the cycle with Partner entity
+        reservation.setPartner(null);
+
+        // Handle RoomType entity by creating a simplified version to avoid cycles
+        RoomType roomType = reservation.getRoomType();
+        if (roomType != null) {
+            em.detach(roomType);
+
+            // Create a lightweight RoomType with only essential fields to prevent cycles
+            RoomType simplifiedRoomType = new RoomType();
+            simplifiedRoomType.setRoomTypeId(roomType.getRoomTypeId());
+            simplifiedRoomType.setName(roomType.getName());
+            reservation.setRoomType(simplifiedRoomType); // Attach lightweight version to reservation
+        }
+
+        // Handle Guest entity and break cycles
+        Guest guest = reservation.getGuest();
+        if (guest != null) {
+            em.detach(guest);
+            guest.getReservations().clear();  // Clear guest's reservations to prevent cycles
+            reservation.setGuest(null);  // Break cycle with Guest
+        }
+
+        // Detach ReservationRooms in Reservation and associated Room entities
+        reservation.getReservationRooms().forEach(reservationRoom -> {
+            em.detach(reservationRoom);
+            reservationRoom.setReservation(null);  // Break cycle with Reservation
+
+            Room room = reservationRoom.getRoom();
+            if (room != null) {
+                em.detach(room);
+                room.setRoomType(null);  // Break cycle with RoomType in Room
+            }
+        });
+
+        // Handle RoomRates in Reservation and clear any RoomType references
+        reservation.getApplicableRoomRates().forEach(roomRate -> {
+            em.detach(roomRate);
+            roomRate.setRoomType(null);  // Break cycle with RoomType in RoomRate
+        });
+
         return reservation;
     }
 
     @WebMethod(operationName = "viewAllPartnerReservations")
     public List<Reservation> viewAllPartnerReservations(@WebParam(name = "username") String username) {
         List<Reservation> reservations = partnerSessionBean.viewAllPartnerReservations(username);
-        reservations.forEach(reservation -> {
-            reservation.getRoomType().getRoomRates().size(); // Load lazy fields for each reservation
-            reservation.getReservationRooms().size();
-        });
+
+        for (Reservation reservation : reservations) {
+            em.detach(reservation);
+            reservation.setPartner(null);  // Break cycle with Partner
+
+            // Handle RoomType in Reservation
+            RoomType roomType = reservation.getRoomType();
+            if (roomType != null) {
+                em.detach(roomType);
+
+                // Create a lightweight RoomType to avoid cycles
+                RoomType simplifiedRoomType = new RoomType();
+                simplifiedRoomType.setRoomTypeId(roomType.getRoomTypeId());
+                simplifiedRoomType.setName(roomType.getName());
+                reservation.setRoomType(simplifiedRoomType); // Attach lightweight version to reservation
+            }
+
+            // Handle Guest entity to prevent cycles
+            Guest guest = reservation.getGuest();
+            if (guest != null) {
+                em.detach(guest);
+                guest.getReservations().clear();  // Clear guest's reservations to prevent cycles
+                reservation.setGuest(null);  // Break cycle with Guest
+            }
+
+            // Detach ReservationRooms in Reservation and associated Room entities
+            reservation.getReservationRooms().forEach(reservationRoom -> {
+                em.detach(reservationRoom);
+                reservationRoom.setReservation(null);  // Break cycle with Reservation
+
+                Room room = reservationRoom.getRoom();
+                if (room != null) {
+                    em.detach(room);
+                    room.setRoomType(null);  // Break cycle with RoomType in Room
+                }
+            });
+
+            // Handle RoomRates in Reservation and clear any RoomType references
+            reservation.getApplicableRoomRates().forEach(roomRate -> {
+                em.detach(roomRate);
+                roomRate.setRoomType(null);  // Break cycle with RoomType in RoomRate
+            });
+        }
+
         return reservations;
     }
-
 }

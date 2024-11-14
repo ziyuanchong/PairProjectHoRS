@@ -29,10 +29,10 @@ public interface PartnerSessionBeanRemote {
 
     public List<RoomType> searchAvailableRoomTypes(Date startDate, Date endDate, int numberOfRooms) throws ReservationUnavailableException;
 
-    public Reservation reserveRoom(Long partnerId, String roomTypeName, Date checkInDate, Date checkOutDate, int numberOfRooms, BigDecimal totalAmount) throws RoomTypeNotFoundException, ReservationUnavailableException, PartnerNotFoundException;
-
     public Reservation viewPartnerReservation(Long reservationId) throws ReservationNotFoundException;
 
     public List<Reservation> viewAllPartnerReservations(String username);
+
+    public Reservation reserveRoom(Long partnerId, String roomTypeName, Date checkInDate, Date checkOutDate, int numberOfRooms) throws RoomTypeNotFoundException, ReservationUnavailableException, PartnerNotFoundException;
     
 }
