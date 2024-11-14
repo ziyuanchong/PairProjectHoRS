@@ -116,7 +116,7 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
     private Room allocateRoomToReservation(Reservation reservation) {
         try {
             return em.createQuery(
-                    "SELECT r FROM Room r WHERE r.roomType = :roomType AND r.isAllocated = false", Room.class)
+                    "SELECT r FROM Room r WHERE r.roomType = :roomType AND r.isAllocated = false AND r.isAvailable = true", Room.class)
                     .setParameter("roomType", reservation.getRoomType())
                     .setMaxResults(1)
                     .getSingleResult();
@@ -137,7 +137,7 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
                         .getSingleResult();
 
                 Room availableRoom = em.createQuery(
-                        "SELECT r FROM Room r WHERE r.roomType = :roomType AND r.isAllocated = false", Room.class)
+                        "SELECT r FROM Room r WHERE r.roomType = :roomType AND r.isAllocated = false AND r.isAvailable = true", Room.class)
                         .setParameter("roomType", nextHigherRoomType)
                         .setMaxResults(1)
                         .getSingleResult();

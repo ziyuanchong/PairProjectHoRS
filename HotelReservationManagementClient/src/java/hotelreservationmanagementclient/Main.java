@@ -482,8 +482,9 @@ public class Main {
             System.out.print("Enter new room type availability (true/false) > ");
             boolean availability = sc.nextBoolean();
             roomType.setAvailable(availability);
+            sc.nextLine();
 
-            System.out.print("Enter new next higher room type (or leave blank if none)> ");
+            System.out.print("Enter new next higher room type (or leave blank if no change)> ");
             String nextHigherRoomType = sc.nextLine().trim();
             if (!nextHigherRoomType.isEmpty()) {
                 roomType.setNextHigherRoomType(nextHigherRoomType);
