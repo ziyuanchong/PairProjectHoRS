@@ -57,7 +57,7 @@ public class PaymentSessionBean implements PaymentSessionBeanRemote, PaymentSess
     private RoomRate findRoomRate(List<RoomRate> roomRates, Date date) { //private method to get room rate on specific date for calculatePaymentForReservationClient
         RoomRate bestRate = null;
         for (RoomRate rate : roomRates) {
-            if (!date.before(rate.getStartDate()) && !date.after(rate.getEndDate())) {
+            if (!date.before(rate.getStartDate()) && !date.after(rate.getEndDate()) && rate.getRateType() != RoomRateTypeEnum.DISABLED) {
                 if (bestRate == null || hasHigherPriority(rate, bestRate)) {
                     bestRate = rate;
                 }
