@@ -50,7 +50,6 @@ public class Main {
     @EJB
     private static CustomerSessionBeanRemote customerSessionBean;
 
-    
     public static void main(String[] args) throws InputNotValidException {
         Scanner sc = new Scanner(System.in);
         Integer response = 1;
@@ -97,8 +96,13 @@ public class Main {
                                 System.out.printf("%-20s%-15s\n", "Room Type", "Total Cost");
                                 System.out.println("---------------------------------------");
                                 for (RoomType rt : roomTypes) {
-                                    BigDecimal amount = paymentSessionBean.calculatePaymentForManagementClient(rt.getName(), checkInDate, checkOutDate, numberOfRooms);
-                                    System.out.printf("%-20s%-15s\n", rt.getName(), amount);
+
+                                    try {
+                                        BigDecimal amount = paymentSessionBean.calculatePaymentForReservationClient(rt.getName(), checkInDate, checkOutDate, numberOfRooms);
+                                        System.out.println(rt.getName() + " (Total Amount :$" + amount + ")");
+                                    } catch (RoomTypeNotFoundException | RoomRateNotFoundException ex) {
+                                        System.out.println(rt.getName() + "(NOT AVAIALBLE)");
+                                    }
 
                                 }
                             } catch (ParseException ex) {
@@ -107,8 +111,6 @@ public class Main {
                                 System.out.println("An error has occurred while fetching the rooms: " + ex.getMessage() + "!\n");
                             } catch (RoomTypeNotFoundException ex2) {
                                 System.out.println("An error has occurred while fetching the rooms: " + ex2.getMessage() + "!\n");
-                            } catch (RoomRateNotFoundException ex3) {
-                                System.out.println("An error has occurred while fetching the rooms: " + ex3.getMessage() + "!\n");
                             }
                         } else if (action == 2) {
                             try {
@@ -206,9 +208,12 @@ public class Main {
                     System.out.printf("%-20s%-15s\n", "Room Type", "Total Cost");
                     System.out.println("---------------------------------------");
                     for (RoomType rt : roomTypes) {
-                        BigDecimal amount = paymentSessionBean.calculatePaymentForManagementClient(rt.getName(), checkInDate, checkOutDate, numberOfRooms);
-                        System.out.printf("%-20s%-15s\n", rt.getName(), amount);
-
+                        try {
+                            BigDecimal amount = paymentSessionBean.calculatePaymentForReservationClient(rt.getName(), checkInDate, checkOutDate, numberOfRooms);
+                            System.out.println(rt.getName() + " (Total Amount :$" + amount + ")");
+                        } catch (RoomTypeNotFoundException | RoomRateNotFoundException ex) {
+                            System.out.println(rt.getName() + "(NOT AVAIALBLE)");
+                        }
                     }
                 } catch (ParseException ex) {
                     throw new InputNotValidException("The dates you have entered are in the wrong format, please try again");
@@ -216,8 +221,6 @@ public class Main {
                     System.out.println("An error has occurred while fetching the rooms: " + ex.getMessage() + "!\n");
                 } catch (RoomTypeNotFoundException ex2) {
                     System.out.println("An error has occurred while fetching the rooms: " + ex2.getMessage() + "!\n");
-                } catch (RoomRateNotFoundException ex3) {
-                    System.out.println("An error has occurred while fetching the rooms: " + ex3.getMessage() + "!\n");
                 }
             }
         }
@@ -233,20 +236,24 @@ public class Main {
         List<RoomType> roomTypes = reservationSessionBean.retrieveListOfAvailableRoomType(startDate, endDate, numberOfRooms);
         System.out.println("*** The Available Room Types Are As Follows: ***\n");
         for (RoomType rt : roomTypes) {
-            BigDecimal amount = paymentSessionBean.calculatePaymentForManagementClient(rt.getName(), startDate, endDate, numberOfRooms);
-            System.out.println(rt.getName() + " (Total Amount :$" + amount + ")");
+            try {
+                BigDecimal amount = paymentSessionBean.calculatePaymentForReservationClient(rt.getName(), startDate, endDate, numberOfRooms);
+                System.out.println(rt.getName() + " (Total Amount :$" + amount + ")");
+            } catch (RoomTypeNotFoundException | RoomRateNotFoundException ex) {
+                System.out.println(rt.getName() + "(NOT AVAIALBLE)");
+            }
         }
         System.out.println("Please input the name of the RoomType that you have chosen");
         String chosenRoomType = sc.nextLine();
         Reservation newReservation = reservationSessionBean.createReservation(customerId, chosenRoomType, startDate, endDate, numberOfRooms,
-                paymentSessionBean.calculatePaymentForManagementClient(chosenRoomType, startDate, endDate, numberOfRooms)); //idk how to store the chosen amount, so ill jus recalculate the chosen one
+                paymentSessionBean.calculatePaymentForReservationClient(chosenRoomType, startDate, endDate, numberOfRooms)); //idk how to store the chosen amount, so ill jus recalculate the chosen one
         if (isSameDay(startDate, new Date()) && isAfter2AM(new Date())) {
-                System.out.println("Allocating rooms immediately as it is a same-day check-in after 2 a.m.");
-                roomAllocationSessionBean.allocateRoomsForDate(startDate);
+            System.out.println("Allocating rooms immediately as it is a same-day check-in after 2 a.m.");
+            roomAllocationSessionBean.allocateRoomsForDate(startDate);
         }
         return newReservation;
     }
-    
+
     private static boolean isSameDay(Date date1, Date date2) {
         Calendar cal1 = Calendar.getInstance();
         cal1.setTime(date1);
