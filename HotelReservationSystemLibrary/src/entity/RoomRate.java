@@ -20,6 +20,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -55,6 +56,7 @@ public class RoomRate implements Serializable {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "roomTypeId", nullable = false)
+    @XmlTransient
     private RoomType roomType;
 
     public RoomRate() {

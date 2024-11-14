@@ -5,8 +5,11 @@
 package ejb.session.ws;
 
 import ejb.session.stateless.PartnerSessionBeanLocal;
+import entity.Guest;
 import entity.Partner;
 import entity.Reservation;
+import entity.Room;
+import entity.RoomRate;
 import entity.RoomType;
 import exception.InvalidPartnerInfoException;
 import exception.PartnerNotFoundException;
@@ -23,6 +26,8 @@ import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.ejb.Stateless;
 import java.text.ParseException;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 /**
  *
@@ -31,6 +36,9 @@ import java.text.ParseException;
 @WebService(serviceName = "HolidayWebService", targetNamespace = "http://ws.session.ejb/")
 @Stateless()
 public class HolidayWebService {
+
+    @PersistenceContext(unitName = "HotelReservationSystem-ejbPU")
+    private EntityManager em;
 
     /**
      * This is a sample web service operation
@@ -44,20 +52,21 @@ public class HolidayWebService {
         return partnerSessionBean.loginPartner(username, password);
     }
 
-    //@WebMethod(operationName = "searchAvailableRoomTypes")
-    //public List<RoomType> searchAvailableRoomTypes(@WebParam(name = "startDate") Date startDate,
-    //        @WebParam(name = "endDate") Date endDate,
-    //        @WebParam(name = "numberOfRooms") int numberOfRooms)
-    //        throws ReservationUnavailableException {
-    //    List<RoomType> roomTypes = partnerSessionBean.searchAvailableRoomTypes(startDate, endDate, numberOfRooms);
-//
-//        // Access lazy-loaded fields before returning, if needed
-    //      roomTypes.forEach(roomType -> {
-    //        roomType.getRoomRates().size(); // Ensure room rates are loaded
+    /*@WebMethod(operationName = "searchAvailableRoomTypes")
+    public List<RoomType> searchAvailableRoomTypes(@WebParam(name = "startDate") Date startDate,
+            @WebParam(name = "endDate") Date endDate,
+            @WebParam(name = "numberOfRooms") int numberOfRooms)
+            throws ReservationUnavailableException {
+        List<RoomType> roomTypes = partnerSessionBean.searchAvailableRoomTypes(startDate, endDate, numberOfRooms);
+
+        //Access lazy-loaded fields before returning, if needed
+          roomTypes.forEach(roomType -> {
+            roomType.getRoomRates().size(); // Ensure room rates are loaded
     // Access other fields if necessary
-    //    });
-    //    return roomTypes;
-    //}
+        });
+        return roomTypes;
+    }
+    **/
     @WebMethod(operationName = "searchAvailableRoomTypes")
     public List<RoomType> searchAvailableRoomTypes(@WebParam(name = "startDate") String startDate,
             @WebParam(name = "endDate") String endDate,
@@ -68,15 +77,50 @@ public class HolidayWebService {
             Date parsedStartDate = formatter.parse(startDate);
             Date parsedEndDate = formatter.parse(endDate);
 
-            // Now call the original method using parsed dates
-            return partnerSessionBean.searchAvailableRoomTypes(parsedStartDate, parsedEndDate, numberOfRooms);
+            List<RoomType> roomTypes = partnerSessionBean.searchAvailableRoomTypes(parsedStartDate, parsedEndDate, numberOfRooms);
+
+            // Detach entities and remove bidirectional references to avoid cyclic issues
+            for (RoomType roomType : roomTypes) {
+                em.detach(roomType);
+
+                for (Room room : roomType.getRooms()) {
+                    em.detach(room);
+                    room.setRoomType(null); // Break cycle with RoomType
+                }
+
+                for (RoomRate roomRate : roomType.getRoomRates()) {
+                    em.detach(roomRate);
+                    roomRate.setRoomType(null); // Break cycle with RoomType
+                }
+
+                for (Reservation reservation : roomType.getReservations()) {
+                    em.detach(reservation);
+
+                    Guest guest = reservation.getGuest();
+                    if (guest != null) {
+                        em.detach(guest);
+                        guest.getReservations().clear(); // Clear guest's reservation list to avoid cycle
+                        reservation.setGuest(null); // Break cycle with Guest
+                    }
+                }
+            }
+
+            return roomTypes;
 
         } catch (ParseException e) {
-            // Handle the parsing error, perhaps by logging it and/or throwing a specific exception
             throw new ReservationUnavailableException("Invalid date format. Please use 'yyyy-MM-dd'.");
         }
     }
 
+
+    /*@WebMethod(operationName = "searchAvailableRoomTypes")
+    public String searchAvailableRoomTypes(
+            @WebParam(name = "startDate") String startDate,
+            @WebParam(name = "endDate") String endDate,
+            @WebParam(name = "numberOfRooms") int numberOfRooms) {
+        return "Testing successful";  // Temporary return for debugging
+    }
+**/
     @WebMethod(operationName = "reserveRoom")
     public Reservation reserveRoom(@WebParam(name = "partnerId") Long partnerId,
             @WebParam(name = "roomTypeName") String roomTypeName,
@@ -106,4 +150,5 @@ public class HolidayWebService {
         });
         return reservations;
     }
+
 }

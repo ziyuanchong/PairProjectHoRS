@@ -14,11 +14,11 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -61,9 +61,11 @@ public class RoomType implements Serializable {
     private List<Reservation> reservations = new ArrayList<>();
 
     @OneToMany(mappedBy = "roomType")
+    @XmlTransient
     private List<Room> rooms = new ArrayList<>();
 
     @OneToMany(mappedBy = "roomType", cascade = CascadeType.ALL)
+    @XmlTransient
     private List<RoomRate> roomRates = new ArrayList<>(); // One-to-many relationship with RoomRate
 
     public RoomType(String name, String description, double size, String bed, int capacity, List<String> amenities, RoomTypeEnum roomCategory, boolean available) {
@@ -214,7 +216,7 @@ public class RoomType implements Serializable {
 
     @Override
     public String toString() {
-            String amenitiesStr = amenities != null ? String.join(", ", amenities) : "No amenities listed";
+        String amenitiesStr = amenities != null ? String.join(", ", amenities) : "No amenities listed";
 
         return "RoomType{"
                 + "ID=" + roomTypeId

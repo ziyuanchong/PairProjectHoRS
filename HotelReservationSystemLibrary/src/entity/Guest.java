@@ -17,6 +17,7 @@ import javax.persistence.InheritanceType;
 import javax.persistence.OneToMany;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -48,6 +49,7 @@ public class Guest implements Serializable {
     private boolean checkIn = false;
     
     @OneToMany(mappedBy = "guest")
+    @XmlTransient
     private List<Reservation> reservations = new ArrayList<>();
 
     public Guest(String firstName, String lastName, String phoneNumber, String email) {

@@ -40,15 +40,18 @@ public class Reservation implements Serializable {
 
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(nullable = false)
+    @XmlTransient
     private Guest guest;
 
     private BigDecimal totalAmount;
 
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(nullable = false)
+    @XmlTransient
     private RoomType roomType;
 
     @OneToMany(mappedBy = "reservation")
+    @XmlTransient
     private List<ReservationRoom> reservationRooms;
 
     private boolean bookingByPartner;

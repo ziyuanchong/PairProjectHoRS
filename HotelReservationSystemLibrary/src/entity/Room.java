@@ -15,6 +15,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -36,8 +37,9 @@ public class Room implements Serializable {
     @Column(nullable = false)
     private boolean isAllocated;
     
-    @ManyToOne
+    @ManyToOne(optional = false)
     @JoinColumn(name = "roomTypeId", nullable = false)
+    @XmlTransient
     private RoomType roomType;
     
     @OneToMany(mappedBy = "room")
