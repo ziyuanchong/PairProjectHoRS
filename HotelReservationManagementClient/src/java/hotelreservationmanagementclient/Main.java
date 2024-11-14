@@ -875,13 +875,18 @@ public class Main {
                 System.out.println("---------------------------------------");
 
                 for (RoomType roomType : availableRoomTypes) {
-                    BigDecimal totalCost = paymentSessionBean.calculatePaymentForManagementClient(roomType.getName(), checkInDate, checkOutDate, numberOfRooms);
-                    System.out.printf("%-20s%-15s\n", roomType.getName(), totalCost);
+                    try{
+                     BigDecimal totalCost = paymentSessionBean.calculatePaymentForManagementClient(roomType.getName(), checkInDate, checkOutDate, numberOfRooms);
+                     System.out.printf("%-20s%-15s\n", roomType.getName(), totalCost);
+                
+                    } catch (RoomRateNotFoundException ex) {
+                        System.out.printf("%-20s%-15s\n", roomType.getName(), "NOT AVAILABLE");
+                    }
                 }
             }
         } catch (ParseException e) {
             System.out.println("Invalid date format. Please enter the date in yyyy-MM-dd format.");
-        } catch (RoomRateNotFoundException | RoomTypeNotFoundException | ReservationUnavailableException ex) {
+        } catch ( RoomTypeNotFoundException | ReservationUnavailableException ex) {
             System.out.println("An error occurred during room search: " + ex.getMessage());
         }
     }

@@ -81,7 +81,7 @@ public class ReservationSessionBean implements ReservationSessionBeanRemote, Res
         } else {
             throw new RoomTypeNotFoundException("There are no room types currently");
         }
-    }
+    }   
 
     public Reservation createReservation(Long guestId, String name, Date checkInDate, Date checkOutDate, int numberOfRooms, BigDecimal totalAmount) {
         Guest guest = em.find(Guest.class, guestId);

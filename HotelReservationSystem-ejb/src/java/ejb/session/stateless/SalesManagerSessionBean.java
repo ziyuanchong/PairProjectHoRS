@@ -122,7 +122,9 @@ public class SalesManagerSessionBean implements SalesManagerSessionBeanRemote, S
     }
 
     public List<RoomRate> retrieveAllRoomRates() {
-        return em.createQuery("SELECT rr FROM RoomRate rr", RoomRate.class).getResultList();
+        return em.createQuery("SELECT rr FROM RoomRate rr WHERE rr.rateType != :disabled", RoomRate.class)
+                .setParameter("disabled", RoomRateTypeEnum.DISABLED)
+                .getResultList();
     }
 
     // Add business logic below. (Right-click in editor and choose

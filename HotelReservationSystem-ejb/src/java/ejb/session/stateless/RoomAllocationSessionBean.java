@@ -53,7 +53,6 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
     /**
      *
      */
-    @Override
     public List<ExceptionAllocationReport> allocateRoomsForDate(Date date) {
         Date checkInDate = stripTime(date);
         List<ExceptionAllocationReport> exceptionReports = new ArrayList<>();
@@ -64,49 +63,49 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
                 .getResultList();
 
         reservationsForDate.forEach(reservation -> {
-            Room allocatedRoom = allocateRoomToReservation(reservation);
+            for (int i = 0; i < reservation.getNumberOfRooms(); i++) {
+                Room allocatedRoom = allocateRoomToReservation(reservation);
 
-            if (allocatedRoom != null) {
-                allocatedRoom.setIsAllocated(true);
-                em.merge(allocatedRoom);
+                if (allocatedRoom != null) {
+                    allocatedRoom.setIsAllocated(true);
+                    em.merge(allocatedRoom);
 
-                ReservationRoom reservationRoom = new ReservationRoom(allocatedRoom, reservation);
-                em.persist(reservationRoom);
-
-                reservation.getReservationRooms().add(reservationRoom);
-                em.merge(reservation);
-            } else {
-                Room upgradedRoom = allocateUpgradeRoom(reservation);
-
-                if (upgradedRoom != null) {
-                    upgradedRoom.setIsAllocated(true);
-                    em.merge(upgradedRoom);
-
-                    ReservationRoom reservationRoom = new ReservationRoom(upgradedRoom, reservation);
+                    ReservationRoom reservationRoom = new ReservationRoom(allocatedRoom, reservation);
                     em.persist(reservationRoom);
 
                     reservation.getReservationRooms().add(reservationRoom);
                     em.merge(reservation);
-
-                    // Only add a report if the ReservationRoom was successfully allocated
-                    ExceptionAllocationReport report = new ExceptionAllocationReport(
-                            AllocationExceptionTypeEnum.UPGRADE_AVAILABLE,
-                            new Date(),
-                            reservation.getRoomType().getName(),
-                            reservationRoom
-                    );
-                    em.persist(report);
-                    exceptionReports.add(report);
                 } else {
-                    // Create report indicating no rooms available without setting a reservationRoom
-                    ExceptionAllocationReport report = new ExceptionAllocationReport(
-                            AllocationExceptionTypeEnum.NO_ROOM_AVAILABLE,
-                            new Date(),
-                            reservation.getRoomType().getName(),
-                            null
-                    );
-                    em.persist(report);
-                    exceptionReports.add(report);
+                    Room upgradedRoom = allocateUpgradeRoom(reservation);
+
+                    if (upgradedRoom != null) {
+                        upgradedRoom.setIsAllocated(true);
+                        em.merge(upgradedRoom);
+
+                        ReservationRoom reservationRoom = new ReservationRoom(upgradedRoom, reservation);
+                        em.persist(reservationRoom);
+
+                        reservation.getReservationRooms().add(reservationRoom);
+                        em.merge(reservation);
+
+                        ExceptionAllocationReport report = new ExceptionAllocationReport(
+                                AllocationExceptionTypeEnum.UPGRADE_AVAILABLE,
+                                new Date(),
+                                reservation.getRoomType().getName(),
+                                reservationRoom
+                        );
+                        em.persist(report);
+                        exceptionReports.add(report);
+                    } else {
+                        ExceptionAllocationReport report = new ExceptionAllocationReport(
+                                AllocationExceptionTypeEnum.NO_ROOM_AVAILABLE,
+                                new Date(),
+                                reservation.getRoomType().getName(),
+                                null
+                        );
+                        em.persist(report);
+                        exceptionReports.add(report);
+                    }
                 }
             }
         });
