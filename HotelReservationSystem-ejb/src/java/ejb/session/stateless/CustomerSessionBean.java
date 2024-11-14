@@ -8,7 +8,10 @@ import entity.Customer;
 import entity.Reservation;
 import entity.Room;
 import entity.RoomType;
+import exception.CustomerAlreadyLoggedInException;
 import exception.CustomerExistException;
+import exception.CustomerNotFoundException;
+import exception.CustomerNotLoggedInException;
 import exception.CustomerWrongCredentialsException;
 import exception.ReservationNotFoundException;
 import exception.ReservationUnavailableException;
@@ -51,20 +54,43 @@ public class CustomerSessionBean implements CustomerSessionBeanRemote, CustomerS
 
     }
 
-    public Customer login(String email, String password) throws CustomerWrongCredentialsException { //use case 1 : login
-        Customer customer = em.createQuery("SELECT c FROM Customer c WHERE c.email = :email AND c.password = :password", Customer.class)
-                .setParameter("password", password)
-                .setParameter("email", email)
-                .getSingleResult();
-        if (customer == null) {
-            throw new CustomerWrongCredentialsException("Customer credentials are wrong");
-        } else {
+    public Customer login(String email, String password) throws CustomerWrongCredentialsException, CustomerAlreadyLoggedInException { //use case 1 : login
+        try {
+            Customer customer = em.createQuery("SELECT c FROM Customer c WHERE c.email = :email AND c.password = :password", Customer.class)
+                    .setParameter("password", password)
+                    .setParameter("email", email)
+                    .getSingleResult();
+
+            if (customer.isLoggedIn()) {
+                throw new CustomerAlreadyLoggedInException("Customer is already logged in.");
+            }
+
+            customer.setLoggedIn(true);
+            em.merge(customer);
+            em.flush();
             return customer;
+        } catch (NoResultException e) {
+            throw new CustomerWrongCredentialsException("Customer credentials are wrong");
         }
+    }
+
+    public void logout(Long customerId) throws CustomerNotLoggedInException, CustomerNotFoundException {
+        Customer customer = em.find(Customer.class, customerId);
+        if (customer == null) {
+            throw new CustomerNotFoundException("Employee not found with ID: " + customerId);
+        }
+
+        if (!customer.isLoggedIn()) {
+            throw new CustomerNotLoggedInException("Employee is not logged in.");
+        }
+
+        customer.setLoggedIn(false);
+        em.merge(customer);
     }
 
     public List<Reservation> retrieveListOfReservationByCustomerId(Long customerId) { //useCase 6 : all reservation
         Customer customer = em.find(Customer.class, customerId);
+        customer.getReservations().size();
         return customer.getReservations();
 
         //never throw exception, assume in main that user is logged in already.

@@ -32,6 +32,7 @@ public class Guest implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long guestId;
     
+    @Column(length = 32, nullable = false)
     private String firstName;
     
     @Column(length = 32, nullable = false)

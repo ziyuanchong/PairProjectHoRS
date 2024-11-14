@@ -17,20 +17,19 @@ import javax.validation.constraints.Size;
 public class Customer extends Guest implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    
+
     @NotNull(message = "Password cannot be null")
     @Size(min = 8, message = "Password must be at least 8 characters long")
     private String password;
-    
+    private boolean loggedIn = false;
 
-    public Customer(){
+    public Customer() {
     }
 
     public Customer(String firstName, String lastName, String phoneNumber, String email, boolean checkIn, String password) {
         super(firstName, lastName, phoneNumber, email);
         this.password = password;
-        
-        
+
     }
 
     public String getPassword() {
@@ -45,5 +44,13 @@ public class Customer extends Guest implements Serializable {
     public String toString() {
         return "entity.Customer[ id=" + getGuestId() + " ]";
     }
-    
+
+    public boolean isLoggedIn() {
+        return loggedIn;
+    }
+
+    public void setLoggedIn(boolean loggedIn) {
+        this.loggedIn = loggedIn;
+    }
+
 }
