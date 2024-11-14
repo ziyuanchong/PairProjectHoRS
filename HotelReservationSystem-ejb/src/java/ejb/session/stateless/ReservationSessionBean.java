@@ -32,7 +32,6 @@ public class ReservationSessionBean implements ReservationSessionBeanRemote, Res
 
     @Override
     public boolean checkForAvailableRooms(String name, Date startDate, Date endDate, int numberOfRooms) throws RoomTypeNotFoundException {
-        System.out.println("Checking available rooms for RoomType: " + name + " from " + startDate + " to " + endDate);
 
         RoomType rt = em.createQuery("SELECT rt FROM RoomType rt WHERE rt.name = :name", RoomType.class)
                 .setParameter("name", name)
@@ -40,26 +39,20 @@ public class ReservationSessionBean implements ReservationSessionBeanRemote, Res
 
         if (rt != null) {
             List<Reservation> overlapReservations = em.createQuery(
-                    "SELECT r FROM Reservation r WHERE r.startDate <= :endDate AND r.endDate >= :startDate AND r.roomType = :roomType",
+                    "SELECT r FROM Reservation r WHERE r.startDate < :endDate AND r.endDate > :startDate AND r.roomType = :roomType",
                     Reservation.class)
                     .setParameter("startDate", startDate)
                     .setParameter("endDate", endDate)
                     .setParameter("roomType", rt)
                     .getResultList();
 
-            System.out.println("Found " + overlapReservations.size() + " overlapping reservations for RoomType: " + name);
-
             int roomsInUse = overlapReservations.stream().mapToInt(Reservation::getNumberOfRooms).sum();
-            System.out.println("Total rooms in use for overlapping dates: " + roomsInUse);
 
             int totalAvailableRooms = (int) rt.getRooms().stream().filter(Room::getIsAvailable).count();
-            System.out.println("Total available rooms in inventory for " + name + ": " + totalAvailableRooms);
 
             if (totalAvailableRooms - roomsInUse >= numberOfRooms) {
-                System.out.println("RoomType " + name + " has sufficient availability.");
                 return true;
             } else {
-                System.out.println("RoomType " + name + " does not have enough rooms available.");
                 return false;
             }
         } else {

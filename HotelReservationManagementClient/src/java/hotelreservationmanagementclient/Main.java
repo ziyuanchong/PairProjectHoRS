@@ -873,6 +873,7 @@ public class Main {
         System.out.println("*** Walk-in Reserve Room ***");
 
         try {
+
             System.out.print("Enter Guest's First Name> ");
             String firstName = sc.nextLine();
             System.out.print("Enter Guest's Last Name> ");
@@ -887,8 +888,6 @@ public class Main {
             } else {
                 guest = guestRelationOfficerSessionBean.retrieveGuestByEmail(email);
             }
-            System.out.print("Enter room type name (from search results)> ");
-            String roomTypeName = sc.nextLine().trim();
 
             System.out.print("Enter check-in date (yyyy-MM-dd)> ");
             String checkInDateInput = sc.nextLine().trim();
@@ -901,6 +900,23 @@ public class Main {
             System.out.print("Enter number of rooms to reserve> ");
             int numberOfRooms = sc.nextInt();
             sc.nextLine(); // consume newline
+            List<RoomType> availableRoomTypes = guestRelationOfficerSessionBean.searchAvailableRooms(checkInDate, checkOutDate, numberOfRooms);
+
+            if (availableRoomTypes.isEmpty()) {
+                System.out.println("No available rooms found for the specified dates.");
+            } else {
+                System.out.printf("%-20s%-15s\n", "Room Type", "Total Cost");
+                System.out.println("---------------------------------------");
+
+                for (RoomType roomType : availableRoomTypes) {
+                    BigDecimal totalCost = paymentSessionBean.calculatePaymentForManagementClient(roomType.getName(), checkInDate, checkOutDate, numberOfRooms);
+                    System.out.printf("%-20s%-15s\n", roomType.getName(), totalCost);
+                }
+            }
+
+            System.out.print("Enter room type name (from search results)> ");
+            String roomTypeName = sc.nextLine().trim();
+
             BigDecimal totalCost = paymentSessionBean.calculatePaymentForManagementClient(roomTypeName, checkInDate, checkOutDate, numberOfRooms);
             // Reserve the room
             Reservation reservation = guestRelationOfficerSessionBean.walkInReserveRoom(guest.getGuestId(), roomTypeName, checkInDate, checkOutDate, numberOfRooms, totalCost);
@@ -920,6 +936,8 @@ public class Main {
             System.out.println("Room type not found: " + ex.getMessage());
         } catch (RoomNotAvailableException ex) {
             System.out.println("Unable to reserve room: " + ex.getMessage());
+        } catch (RoomTypeNotFoundException | ReservationUnavailableException ex) {
+            System.out.println("An error occurred during room search: " + ex.getMessage());
         }
     }
 
