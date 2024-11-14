@@ -33,7 +33,7 @@ public class RoomAllocationSchedulerSessionBean {
     
 
     // Automatically triggers room allocation daily at 2 a.m.
-    @Schedule(hour = "2", minute = "0", second = "0", persistent = false)
+    @Schedule(hour = "14", minute = "30", second = "0", persistent = false)
     public void dailyRoomAllocation() {
         System.out.println("Starting room allocation process at 2 a.m.");
         roomAllocationSessionBean.allocateRoomsForDate(new Date());

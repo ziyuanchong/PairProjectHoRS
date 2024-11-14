@@ -86,10 +86,7 @@ public class GuestRelationOfficerSessionBean implements GuestRelationOfficerSess
         Reservation reservation = reservationSessionBean.createReservation(guestId, name, checkInDate, checkOutDate, numberOfRooms, totalAmount);
 
         // Check if it's a same-day check-in after 2 a.m.
-        if (isSameDay(checkInDate, new Date()) && isAfter2AM(new Date())) {
-            // Immediately allocate rooms for today's reservations
-            roomAllocationSessionBean.allocateRoomsForDate(new Date());
-        }
+     
 
         return reservation;
     }

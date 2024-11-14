@@ -4,6 +4,7 @@
  */
 package entity;
 
+import Enum.RoomRateTypeEnum;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -59,6 +60,10 @@ public class Reservation implements Serializable {
     @ManyToOne
     @XmlTransient
     private Partner partner;
+
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "reservation_id")
+    private List<RoomRate> applicableRoomRates = new ArrayList<>();
 
     public Reservation() {
         this.reservationRooms = new ArrayList<>();
@@ -180,6 +185,16 @@ public class Reservation implements Serializable {
         }
         return true;
     }
+
+    public List<RoomRate> getApplicableRoomRates() {
+        return applicableRoomRates;
+    }
+
+    public void setApplicableRoomRates(List<RoomRate> applicableRoomRates) {
+        this.applicableRoomRates = applicableRoomRates;
+    }
+
+   
 
     @Override
     public String toString() {

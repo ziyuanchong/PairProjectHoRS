@@ -13,7 +13,6 @@
             </test-roots>
             <included-library dirs="200">libs.jakartaee-api-8.0.classpath</included-library>
             <included-library dirs="200">reference.HotelReservationSystemLibrary.jar</included-library>
-            <included-library dirs="200">libs.CopyLibs.classpath</included-library>
         </data>
         <references xmlns="http://www.netbeans.org/ns/ant-project-references/1">
             <reference>

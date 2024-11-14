@@ -88,6 +88,7 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
                     reservation.getReservationRooms().add(reservationRoom);
                     em.merge(reservation);
 
+                    // Only add a report if the ReservationRoom was successfully allocated
                     ExceptionAllocationReport report = new ExceptionAllocationReport(
                             AllocationExceptionTypeEnum.UPGRADE_AVAILABLE,
                             new Date(),
@@ -97,6 +98,7 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
                     em.persist(report);
                     exceptionReports.add(report);
                 } else {
+                    // Create report indicating no rooms available without setting a reservationRoom
                     ExceptionAllocationReport report = new ExceptionAllocationReport(
                             AllocationExceptionTypeEnum.NO_ROOM_AVAILABLE,
                             new Date(),

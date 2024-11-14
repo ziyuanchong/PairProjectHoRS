@@ -108,6 +108,7 @@ public class OperationManagerSessionBean implements OperationManagerSessionBeanR
         existingRoomType.setCapacity(updatedRoomType.getCapacity());
         existingRoomType.setAmenities(updatedRoomType.getAmenities());
         existingRoomType.setNextHigherRoomType(updatedRoomType.getNextHigherRoomType());
+        existingRoomType.setAvailable(updatedRoomType.isAvailable());
 
         return existingRoomType;
     }
@@ -158,20 +159,23 @@ public class OperationManagerSessionBean implements OperationManagerSessionBeanR
     }
 
     @Override
-    public void deleteRoom(Long roomId) throws RoomNotFoundException {
+    public boolean deleteRoom(Long roomId) throws RoomNotFoundException {
         Room room = em.find(Room.class, roomId);
         if (room == null) {
             throw new RoomNotFoundException("Room not found with ID: " + roomId);
         }
 
-        // Check if the room is currently allocated
         if (room.getIsAllocated()) {
-            room.setIsAvailable(false); // Mark as unavailable if currently allocated
+            // If the room is allocated, mark it as unavailable instead of deleting
+            room.setIsAvailable(false);
             em.merge(room);
-            System.out.println("Room is currently allocated and has been marked as unavailable.");
+            System.out.println("Room with ID " + roomId + " is currently allocated and has been marked as unavailable.");
+            return false; // Indicates the room was not deleted, only marked unavailable
         } else {
-            em.remove(room); // Delete if it is not currently allocated
-            System.out.println("Room deleted successfully.");
+            // If the room is not allocated, delete it
+            em.remove(room);
+            System.out.println("Room with ID " + roomId + " was deleted successfully.");
+            return true; // Indicates the room was successfully deleted
         }
     }
 
@@ -188,6 +192,8 @@ public class OperationManagerSessionBean implements OperationManagerSessionBeanR
     public ExceptionAllocationReport generateRoomAllocationExceptionReport(String roomTypeRequested, Long reservationRoomId)
             throws RoomNotFoundException {
         ReservationRoom reservationRoom = em.find(ReservationRoom.class, reservationRoomId);
+
+        // Check if reservationRoom is null
         if (reservationRoom == null) {
             throw new RoomNotFoundException("ReservationRoom not found with ID: " + reservationRoomId);
         }
@@ -205,13 +211,14 @@ public class OperationManagerSessionBean implements OperationManagerSessionBeanR
             return null;
         }
 
-        // Create and persist the exception report
+        // Create and persist the exception report with a valid reservationRoom
         ExceptionAllocationReport report = new ExceptionAllocationReport(
                 exceptionType,
                 new Date(),
                 roomTypeRequested,
-                reservationRoom
+                reservationRoom // Ensure reservationRoom is passed here
         );
+
         em.persist(report);
         return report;
     }

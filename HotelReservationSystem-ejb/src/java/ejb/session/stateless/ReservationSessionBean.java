@@ -6,16 +6,16 @@ package ejb.session.stateless;
 
 import entity.Guest;
 import entity.Reservation;
-import entity.ReservationRoom;
 import entity.Room;
+import entity.RoomRate;
 import entity.RoomType;
 import exception.ReservationUnavailableException;
 import exception.RoomTypeNotFoundException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -26,6 +26,9 @@ import javax.persistence.PersistenceContext;
  */
 @Stateless
 public class ReservationSessionBean implements ReservationSessionBeanRemote, ReservationSessionBeanLocal {
+
+    @EJB
+    private PaymentSessionBeanLocal paymentSessionBean;
 
     @PersistenceContext(unitName = "HotelReservationSystem-ejbPU")
     private EntityManager em;
@@ -65,7 +68,7 @@ public class ReservationSessionBean implements ReservationSessionBeanRemote, Res
         if (listOfRoomTypes != null) { //check if there are at least 1 roomtype
             List<RoomType> listOfAvailableRoomTypes = new ArrayList<>();
             for (RoomType rt : listOfRoomTypes) {
-                if (checkForAvailableRooms(rt.getName(), startDate, endDate, numberOfRooms)) {
+                if (rt.isAvailable() && checkForAvailableRooms(rt.getName(), startDate, endDate, numberOfRooms)) {
                     listOfAvailableRoomTypes.add(rt);
                 }
             }
@@ -81,34 +84,24 @@ public class ReservationSessionBean implements ReservationSessionBeanRemote, Res
     }
 
     public Reservation createReservation(Long guestId, String name, Date checkInDate, Date checkOutDate, int numberOfRooms, BigDecimal totalAmount) {
-        Guest guest = em.find(Guest.class, guestId); // returns Customer if finds customer;
+        Guest guest = em.find(Guest.class, guestId);
         Reservation reservation = new Reservation(checkInDate, checkOutDate, numberOfRooms, totalAmount);
         RoomType rt = em.createQuery("SELECT rt FROM RoomType rt WHERE rt.name = :name", RoomType.class)
                 .setParameter("name", name)
                 .getSingleResult();
         reservation.setGuest(guest);
-        reservation.setRoomType(rt); //reservation set as Roomtype, assume exists as we will run previous methods before this
-        if (checkInDate.equals(new Date())) {
-            List<Room> rooms = rt.getRooms();
-            while (numberOfRooms-- > 0) {
-                for (Room room : rooms) {
-                    if (!room.getIsAllocated()) { //allocate any room, assume that reservation can be made through earlier methods
-                        room.setIsAllocated(true);
-                        ReservationRoom reservationRoom = new ReservationRoom();
-                        reservationRoom.setRoom(room);
-                        reservationRoom.setReservation(reservation);
-                        reservation.getReservationRooms().add(reservationRoom);
-                        //add reservation room into reservation
-                        em.persist(reservationRoom);
-                        em.flush();//save new reservationroom
-                    }
-                }
-            }
-        }
-        guest.getReservations().add(reservation);
-        em.persist(reservation); // Save the reservation
+        reservation.setRoomType(rt);
+
+        // Populate applicableRoomRates based on date overlap with RoomRate periods
+        List<RoomRate> applicableRates = paymentSessionBean.findApplicableRoomRatesForPeriod(rt, checkInDate, checkOutDate);
+        reservation.setApplicableRoomRates(applicableRates);
+
+        // Your allocation logic here...
+        em.persist(reservation);
         em.flush();
         return reservation;
     }
 
+// Method to find RoomRates based on the date range
+    
 }

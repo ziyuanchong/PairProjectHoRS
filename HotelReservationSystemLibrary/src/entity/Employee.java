@@ -47,6 +47,7 @@ public class Employee implements Serializable {
     @NotNull(message = "Role cannot be null")
     private EmployeeEnum employeeEnum;
     
+    @Column
     private boolean loggedIn = false;
 
     public Employee() {

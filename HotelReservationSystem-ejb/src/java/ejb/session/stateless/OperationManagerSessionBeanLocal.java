@@ -34,7 +34,7 @@ public interface OperationManagerSessionBeanLocal {
 
     public Room updateRoom(Long roomId, String roomNumber, boolean isAvailable, Long roomTypeId) throws RoomNotFoundException, RoomTypeNotFoundException;
 
-    public void deleteRoom(Long roomId) throws RoomNotFoundException;
+    public boolean deleteRoom(Long roomId) throws RoomNotFoundException;
 
     public List<Room> retrieveAllRooms();
 

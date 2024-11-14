@@ -5,12 +5,12 @@
 package ejb.session.stateless;
 
 import Enum.RoomRateTypeEnum;
-import entity.Reservation;
 import entity.RoomRate;
 import entity.RoomType;
 import exception.RoomRateNotFoundException;
 import exception.RoomTypeNotFoundException;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -54,10 +54,14 @@ public class PaymentSessionBean implements PaymentSessionBeanRemote, PaymentSess
         return bigDecimalValue.multiply(totalAmount);
     }
 
-    private RoomRate findRoomRate(List<RoomRate> roomRates, Date date) { //private method to get room rate on specific date for calculatePaymentForReservationClient
+    private RoomRate findRoomRate(List<RoomRate> roomRates, Date date) {
         RoomRate bestRate = null;
         for (RoomRate rate : roomRates) {
-            if (!date.before(rate.getStartDate()) && !date.after(rate.getEndDate()) && rate.getRateType() != RoomRateTypeEnum.DISABLED) {
+            // Skip PUBLISHED rates and check for valid date range and enabled rate type
+            boolean isInDateRange = (rate.getStartDate() == null || !date.before(rate.getStartDate()))
+                    && (rate.getEndDate() == null || !date.after(rate.getEndDate()));
+            if (rate.getRateType() != RoomRateTypeEnum.PUBLISHED && isInDateRange && rate.getRateType() != RoomRateTypeEnum.DISABLED) {
+                // Update bestRate if this rate has a higher priority
                 if (bestRate == null || hasHigherPriority(rate, bestRate)) {
                     bestRate = rate;
                 }
@@ -66,8 +70,17 @@ public class PaymentSessionBean implements PaymentSessionBeanRemote, PaymentSess
         return bestRate;
     }
 
-    private boolean hasHigherPriority(RoomRate newRate, RoomRate currentBestRate) { // private method to compare two room rates
-        return newRate.getRateType().ordinal() > currentBestRate.getRateType().ordinal();
+    private boolean hasHigherPriority(RoomRate newRate, RoomRate currentBestRate) {
+        // Define priority order based on the enum values, assuming they are ordered by priority
+        // PROMOTION > PEAK > NORMAL
+        if (newRate.getRateType() == RoomRateTypeEnum.PROMOTION) {
+            return true;
+        } else if (newRate.getRateType() == RoomRateTypeEnum.PEAK && currentBestRate.getRateType() != RoomRateTypeEnum.PROMOTION) {
+            return true;
+        } else if (newRate.getRateType() == RoomRateTypeEnum.NORMAL && currentBestRate.getRateType() == RoomRateTypeEnum.NORMAL) {
+            return true;
+        }
+        return false;
     }
 
     public BigDecimal calculatePaymentForManagementClient(String name, Date startDate, Date endDate, int numberOfRooms) throws RoomRateNotFoundException {
@@ -98,5 +111,25 @@ public class PaymentSessionBean implements PaymentSessionBeanRemote, PaymentSess
             }
         }
         throw new RoomRateNotFoundException("No published RoomRate found");
+    }
+
+    public List<RoomRate> findApplicableRoomRatesForPeriod(RoomType roomType, Date startDate, Date endDate) {
+        List<RoomRate> applicableRoomRates = new ArrayList<>();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(startDate);
+
+        while (!calendar.getTime().after(endDate)) {
+            Date currentDate = calendar.getTime();
+            RoomRate bestRateForDate = findRoomRate(roomType.getRoomRates(), currentDate);
+
+            // Add the best rate for the day if it is not already in the list
+            if (bestRateForDate != null && !applicableRoomRates.contains(bestRateForDate)) {
+                applicableRoomRates.add(bestRateForDate);
+            }
+
+            calendar.add(Calendar.DAY_OF_MONTH, 1); // Move to the next day
+        }
+
+        return applicableRoomRates;
     }
 }

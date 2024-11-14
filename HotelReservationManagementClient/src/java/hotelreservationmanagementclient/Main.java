@@ -479,6 +479,16 @@ public class Main {
                 roomType.setAmenities(Arrays.asList(amenities.split(",")));
             }
 
+            System.out.print("Enter new room type availability (true/false) > ");
+            boolean availability = sc.nextBoolean();
+            roomType.setAvailable(availability);
+
+            System.out.print("Enter new next higher room type (or leave blank if none)> ");
+            String nextHigherRoomType = sc.nextLine().trim();
+            if (!nextHigherRoomType.isEmpty()) {
+                roomType.setNextHigherRoomType(nextHigherRoomType);
+            }
+
             operationManagerSessionBean.updateRoomType(roomType);
             System.out.println("Room Type updated successfully.");
 
@@ -586,8 +596,14 @@ public class Main {
 
         try {
             Room room = operationManagerSessionBean.findRoomByNumber(roomNumber); // Find the room by room number
-            operationManagerSessionBean.deleteRoom(room.getRoomId()); // Delete or mark as unavailable based on allocation status
-            System.out.println("Room with number " + roomNumber + " has been processed for deletion or marked unavailable if allocated.");
+            boolean wasDeleted = operationManagerSessionBean.deleteRoom(room.getRoomId()); // Delete or mark as unavailable based on allocation status
+
+            if (wasDeleted) {
+                System.out.println("Room with number " + roomNumber + " has been processed for deletion");
+            } else {
+                System.out.println("Room with number " + roomNumber + " has marked unavailable as its allocated currently");
+            }
+
         } catch (RoomNotFoundException ex) {
             System.out.println("Room not found: " + ex.getMessage());
         } catch (Exception ex) {
@@ -624,10 +640,12 @@ public class Main {
             System.out.println("---------------------------------------------------------------------------------------------");
 
             reports.forEach(report -> {
-                String exceptionDate = report.getGeneratedAt().toString();
-                String exceptionType = report.getExceptionType().name();
-                String roomTypeRequested = report.getRoomTypeRequested();
-                String reservationRoom = report.getReservationRoom() != null ? report.getReservationRoom().getRoom().getRoomNumber() : "N/A";
+                String exceptionDate = (report.getGeneratedAt() != null) ? report.getGeneratedAt().toString() : "N/A";
+                String exceptionType = (report.getExceptionType() != null) ? report.getExceptionType().name() : "N/A";
+                String roomTypeRequested = (report.getRoomTypeRequested() != null) ? report.getRoomTypeRequested() : "N/A";
+                String reservationRoom = (report.getReservationRoom() != null && report.getReservationRoom().getRoom() != null)
+                        ? report.getReservationRoom().getRoom().getRoomNumber()
+                        : "N/A";
 
                 System.out.printf("%-25s%-30s%-20s%-20s\n", exceptionDate, exceptionType, roomTypeRequested, reservationRoom);
             });
@@ -909,9 +927,14 @@ public class Main {
                 System.out.println("---------------------------------------");
 
                 for (RoomType roomType : availableRoomTypes) {
-                    BigDecimal totalCost = paymentSessionBean.calculatePaymentForManagementClient(roomType.getName(), checkInDate, checkOutDate, numberOfRooms);
-                    System.out.printf("%-20s%-15s\n", roomType.getName(), totalCost);
-                }
+                    try{
+                     BigDecimal totalCost = paymentSessionBean.calculatePaymentForManagementClient(roomType.getName(), checkInDate, checkOutDate, numberOfRooms);
+                     System.out.printf("%-20s%-15s\n", roomType.getName(), totalCost);
+                
+                    } catch (RoomRateNotFoundException ex) {
+                        System.out.printf("%-20s%-15s\n", roomType.getName(), "NOT AVAILABLE");
+                    }
+                } 
             }
 
             System.out.print("Enter room type name (from search results)> ");

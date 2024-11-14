@@ -105,20 +105,19 @@ public class SalesManagerSessionBean implements SalesManagerSessionBeanRemote, S
     }
 
     private boolean isRoomRateInUse(Long roomRateId) {
-        // Find the RoomType associated with the RoomRate
+        // Find the RoomRate entity associated with the provided ID
         RoomRate roomRate = em.find(RoomRate.class, roomRateId);
         if (roomRate == null) {
             return false;
         }
 
-        RoomType roomType = roomRate.getRoomType();
-
-        // Check if there are any reservations using this RoomType
+        // Check if there are any reservations that have the roomRate in their applicableRoomRates
         Long reservationCount = em.createQuery(
-                "SELECT COUNT(r) FROM Reservation r WHERE r.roomType = :roomType", Long.class)
-                .setParameter("roomType", roomType)
+                "SELECT COUNT(r) FROM Reservation r JOIN r.applicableRoomRates arr WHERE arr = :roomRate", Long.class)
+                .setParameter("roomRate", roomRate)
                 .getSingleResult();
 
+        // If reservationCount is greater than 0, it means the RoomRate is in use
         return reservationCount > 0;
     }
 
