@@ -93,17 +93,25 @@ public class Main {
                                 int numberOfRooms = sc.nextInt();
                                 sc.nextLine();
                                 List<RoomType> roomTypes = reservationSessionBean.retrieveListOfAvailableRoomType(checkInDate, checkOutDate, numberOfRooms);
-                                System.out.printf("%-20s%-15s\n", "Room Type", "Total Cost");
-                                System.out.println("---------------------------------------");
-                                for (RoomType rt : roomTypes) {
+                                System.out.printf("%-20s%-15s%-64s%-10s%-10s%-15s%-25s\n",
+                                        "Room Type", "Total Cost", "Description", "Size", "Bed", "Capacity", "Amenities");
+                                System.out.println("--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
 
+                                for (RoomType rt : roomTypes) {
                                     try {
                                         BigDecimal amount = paymentSessionBean.calculatePaymentForReservationClient(rt.getName(), checkInDate, checkOutDate, numberOfRooms);
-                                        System.out.println(rt.getName() + " (Total Amount :$" + amount + ")");
-                                    } catch (RoomTypeNotFoundException | RoomRateNotFoundException ex) {
-                                        System.out.println(rt.getName() + "(NOT AVAIALBLE)");
-                                    }
 
+                                        System.out.printf("%-20s$%-14s%-64s%-10s%-10s%-15s%-25s\n",
+                                                rt.getName(),
+                                                amount.toString(),
+                                                rt.getDescription(),
+                                                rt.getSize(),
+                                                rt.getBed(),
+                                                rt.getCapacity(),
+                                                rt.getAmenities());
+
+                                    } catch (RoomTypeNotFoundException | RoomRateNotFoundException ex) {
+                                    }
                                 }
                             } catch (ParseException ex) {
                                 throw new InputNotValidException("The dates you have entered are in the wrong format, please try again");
@@ -205,14 +213,24 @@ public class Main {
                     int numberOfRooms = sc.nextInt();
                     sc.nextLine();
                     List<RoomType> roomTypes = reservationSessionBean.retrieveListOfAvailableRoomType(checkInDate, checkOutDate, numberOfRooms);
-                    System.out.printf("%-20s%-15s\n", "Room Type", "Total Cost");
-                    System.out.println("---------------------------------------");
+                    System.out.printf("%-20s%-15s%-64s%-10s%-10s%-15s%-25s\n",
+                            "Room Type", "Total Cost", "Description", "Size", "Bed", "Capacity", "Amenities");
+                    System.out.println("--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
+
                     for (RoomType rt : roomTypes) {
                         try {
                             BigDecimal amount = paymentSessionBean.calculatePaymentForReservationClient(rt.getName(), checkInDate, checkOutDate, numberOfRooms);
-                            System.out.println(rt.getName() + " (Total Amount :$" + amount + ")");
+
+                            System.out.printf("%-20s$%-14s%-64s%-10s%-10s%-15s%-25s\n",
+                                    rt.getName(),
+                                    amount.toString(),
+                                    rt.getDescription(),
+                                    rt.getSize(),
+                                    rt.getBed(),
+                                    rt.getCapacity(),
+                                    rt.getAmenities());
+
                         } catch (RoomTypeNotFoundException | RoomRateNotFoundException ex) {
-                            System.out.println(rt.getName() + "(NOT AVAIALBLE)");
                         }
                     }
                 } catch (ParseException ex) {
@@ -240,7 +258,6 @@ public class Main {
                 BigDecimal amount = paymentSessionBean.calculatePaymentForReservationClient(rt.getName(), startDate, endDate, numberOfRooms);
                 System.out.println(rt.getName() + " (Total Amount :$" + amount + ")");
             } catch (RoomTypeNotFoundException | RoomRateNotFoundException ex) {
-                System.out.println(rt.getName() + "(NOT AVAIALBLE)");
             }
         }
         System.out.println("Please input the name of the RoomType that you have chosen");

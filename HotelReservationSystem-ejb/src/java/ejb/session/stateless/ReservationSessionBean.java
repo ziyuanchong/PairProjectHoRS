@@ -70,6 +70,7 @@ public class ReservationSessionBean implements ReservationSessionBeanRemote, Res
             for (RoomType rt : listOfRoomTypes) {
                 if (rt.isAvailable() && checkForAvailableRooms(rt.getName(), startDate, endDate, numberOfRooms)) {
                     listOfAvailableRoomTypes.add(rt);
+                    rt.getAmenities().size();
                 }
             }
             if (listOfAvailableRoomTypes.isEmpty()) { // no roomtypes available

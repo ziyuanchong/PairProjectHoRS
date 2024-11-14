@@ -880,7 +880,6 @@ public class Main {
                      System.out.printf("%-20s%-15s\n", roomType.getName(), totalCost);
                 
                     } catch (RoomRateNotFoundException ex) {
-                        System.out.printf("%-20s%-15s\n", roomType.getName(), "NOT AVAILABLE");
                     }
                 }
             }
@@ -937,7 +936,6 @@ public class Main {
                      System.out.printf("%-20s%-15s\n", roomType.getName(), totalCost);
                 
                     } catch (RoomRateNotFoundException ex) {
-                        System.out.printf("%-20s%-15s\n", roomType.getName(), "NOT AVAILABLE");
                     }
                 } 
             }
