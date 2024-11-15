@@ -56,7 +56,6 @@ public class RoomRate implements Serializable {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "roomTypeId", nullable = false)
-    @XmlTransient
     private RoomType roomType;
 
     public RoomRate() {

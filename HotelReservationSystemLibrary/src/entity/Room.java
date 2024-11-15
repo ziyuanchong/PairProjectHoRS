@@ -39,7 +39,6 @@ public class Room implements Serializable {
     
     @ManyToOne(optional = false)
     @JoinColumn(name = "roomTypeId", nullable = false)
-    @XmlTransient
     private RoomType roomType;
     
     @OneToMany(mappedBy = "room")
