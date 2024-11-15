@@ -4,6 +4,7 @@
  */
 package ejb.session.stateless;
 
+import HelperClass.RoomTypeAvailability;
 import entity.Guest;
 import entity.Reservation;
 import entity.Room;
@@ -43,4 +44,8 @@ public interface GuestRelationOfficerSessionBeanRemote {
     public boolean checkIfGuestExists(String email);
 
     public Guest retrieveGuestByEmail(String email);
+
+    public Reservation walkInReserveRoomTWO(Long guestId, String name, Date checkInDate, Date checkOutDate, int numberOfRooms, BigDecimal totalAmount) throws RoomNotAvailableException;
+
+    public List<RoomTypeAvailability> searchAvailableRoomTypes(Date checkInDate, Date checkOutDate) throws ReservationUnavailableException, RoomTypeNotFoundException;
 }

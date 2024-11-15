@@ -4,6 +4,7 @@
  */
 package hotelreservationclient;
 
+import HelperClass.RoomTypeAvailability;
 import ejb.session.stateless.CustomerSessionBeanRemote;
 import ejb.session.stateless.PaymentSessionBeanRemote;
 import ejb.session.stateless.ReservationSessionBeanRemote;
@@ -89,35 +90,26 @@ public class Main {
                                 System.out.println("Enter check-out date in yyyy-MM-dd: ");
                                 String checkOutDateInput = sc.nextLine();
                                 Date checkOutDate = new SimpleDateFormat("yyyy-MM-dd").parse(checkOutDateInput);
-                                System.out.println("Enter the number of rooms required: ");
-                                int numberOfRooms = sc.nextInt();
-                                sc.nextLine();
-                                List<RoomType> roomTypes = reservationSessionBean.retrieveListOfAvailableRoomType(checkInDate, checkOutDate, numberOfRooms);
-                                System.out.printf("%-20s%-15s%-64s%-10s%-10s%-15s%-25s\n",
-                                        "Room Type", "Total Cost", "Description", "Size", "Bed", "Capacity", "Amenities");
-                                System.out.println("--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
+                                List<RoomTypeAvailability> availableRoomTypes = reservationSessionBean.retrieveRoomTypeAvailability(checkInDate, checkOutDate);
+                                if (availableRoomTypes.isEmpty()) {
+                                    System.out.println("No available rooms found for the specified dates.");
+                                } else {
+                                    System.out.printf("%-15s %-15s %-25s\n", "Room Type", "Rate Per Room", "Number Of Available Rooms");
+                                    System.out.println("-------------------------------------------------------------------------------------");
 
-
-                                for (RoomType rt : roomTypes) {
-                                    try {
-                                        BigDecimal amount = paymentSessionBean.calculatePaymentForReservationClient(rt.getName(), checkInDate, checkOutDate, numberOfRooms);
-
-                                        System.out.printf("%-20s$%-14s%-64s%-10s%-10s%-15s%-25s\n",
-                                                rt.getName(),
-                                                amount.toString(),
-                                                rt.getDescription(),
-                                                rt.getSize(),
-                                                rt.getBed(),
-                                                rt.getCapacity(),
-                                                rt.getAmenities());
-
-                                    } catch (RoomTypeNotFoundException | RoomRateNotFoundException ex) {
+                                    for (RoomTypeAvailability rta : availableRoomTypes) {
+                                        try {
+                                            RoomType roomType = rta.getRoomType();
+                                            int numberOfAvailableRooms = rta.getAvailableRooms();
+                                            BigDecimal totalCost = paymentSessionBean.calculatePaymentForManagementClient(roomType.getName(), checkInDate, checkOutDate, 0);
+                                            System.out.printf("%-20s%-15s%-25s\n", roomType.getName(), totalCost, rta.getAvailableRooms());
+                                        } catch (RoomRateNotFoundException ex) {
+                                        }
                                     }
                                 }
+
                             } catch (ParseException ex) {
                                 throw new InputNotValidException("The dates you have entered are in the wrong format, please try again");
-                            } catch (ReservationUnavailableException ex) {
-                                System.out.println("An error has occurred while fetching the rooms: " + ex.getMessage() + "!\n");
                             } catch (RoomTypeNotFoundException ex2) {
                                 System.out.println("An error has occurred while fetching the rooms: " + ex2.getMessage() + "!\n");
                             }
@@ -129,11 +121,8 @@ public class Main {
                                 System.out.println("Enter check-out date in yyyy-MM-dd: ");
                                 String checkOutDateInput = sc.nextLine();
                                 Date checkOutDate = new SimpleDateFormat("yyyy-MM-dd").parse(checkOutDateInput);
-                                System.out.println("Enter the number of rooms required: ");
-                                int numberOfRooms = sc.nextInt();
-                                sc.nextLine();
                                 try {
-                                    Reservation reservation = makeReservation(customer.getGuestId(), checkInDate, checkOutDate, numberOfRooms);
+                                    Reservation reservation = makeReservation(customer.getGuestId(), checkInDate, checkOutDate, 0);
                                     System.out.println("Reservation successfully created");
                                 } catch (ReservationUnavailableException ex) {
                                     System.out.println("An error has occurred while creating the Reservation: " + ex.getMessage() + "!\n");
@@ -210,37 +199,27 @@ public class Main {
                     System.out.println("Enter check-out date in yyyy-MM-dd: ");
                     String checkOutDateInput = sc.nextLine();
                     Date checkOutDate = new SimpleDateFormat("yyyy-MM-dd").parse(checkOutDateInput);
-                    System.out.println("Enter the number of rooms required: ");
-                    int numberOfRooms = sc.nextInt();
-                    sc.nextLine();
-                    List<RoomType> roomTypes = reservationSessionBean.retrieveListOfAvailableRoomType(checkInDate, checkOutDate, numberOfRooms);
-                    System.out.printf("%-20s%-15s%-64s%-10s%-10s%-15s%-25s\n",
-                            "Room Type", "Total Cost", "Description", "Size", "Bed", "Capacity", "Amenities");
-                    System.out.println("--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
+                    List<RoomTypeAvailability> availableRoomTypes = reservationSessionBean.retrieveRoomTypeAvailability(checkInDate, checkOutDate);
+                    if (availableRoomTypes.isEmpty()) {
+                        System.out.println("No available rooms found for the specified dates.");
+                    } else {
+                        System.out.printf("%-15s %-15s %-25s\n", "Room Type", "Rate Per Room", "Number Of Available Rooms");
+                        System.out.println("-------------------------------------------------------------------------------------");
 
-                    for (RoomType rt : roomTypes) {
-
-                        try {
-                            BigDecimal amount = paymentSessionBean.calculatePaymentForReservationClient(rt.getName(), checkInDate, checkOutDate, numberOfRooms);
-
-                            System.out.printf("%-20s$%-14s%-64s%-10s%-10s%-15s%-25s\n",
-                                    rt.getName(),
-                                    amount.toString(),
-                                    rt.getDescription(),
-                                    rt.getSize(),
-                                    rt.getBed(),
-                                    rt.getCapacity(),
-                                    rt.getAmenities());
-
-                        } catch (RoomTypeNotFoundException | RoomRateNotFoundException ex) {
+                        for (RoomTypeAvailability rta : availableRoomTypes) {
+                            try {
+                                RoomType roomType = rta.getRoomType();
+                                int numberOfAvailableRooms = rta.getAvailableRooms();
+                                BigDecimal totalCost = paymentSessionBean.calculatePaymentForManagementClient(roomType.getName(), checkInDate, checkOutDate, 0);
+                                System.out.printf("%-20s%-15s%-25s\n", roomType.getName(), totalCost, rta.getAvailableRooms());
+                            } catch (RoomRateNotFoundException ex) {
+                            }
                         }
                     }
                 } catch (ParseException ex) {
                     throw new InputNotValidException("The dates you have entered are in the wrong format, please try again");
-                } catch (ReservationUnavailableException ex) {
+                } catch (RoomTypeNotFoundException ex) {
                     System.out.println("An error has occurred while fetching the rooms: " + ex.getMessage() + "!\n");
-                } catch (RoomTypeNotFoundException ex2) {
-                    System.out.println("An error has occurred while fetching the rooms: " + ex2.getMessage() + "!\n");
                 }
             }
         }
@@ -253,20 +232,30 @@ public class Main {
     private static Reservation makeReservation(Long customerId, Date startDate, Date endDate, int numberOfRooms) throws ReservationUnavailableException, RoomTypeNotFoundException, RoomRateNotFoundException {
 
         Scanner sc = new Scanner(System.in);
-        List<RoomType> roomTypes = reservationSessionBean.retrieveListOfAvailableRoomType(startDate, endDate, numberOfRooms);
-        System.out.println("*** The Available Room Types Are As Follows: ***\n");
-        for (RoomType rt : roomTypes) {
+        List<RoomTypeAvailability> availableRoomTypes = reservationSessionBean.retrieveRoomTypeAvailability(startDate, endDate);
+        if (availableRoomTypes.isEmpty()) {
+            System.out.println("No available rooms found for the specified dates.");
+        } else {
+            System.out.printf("%-15s %-15s %-25s\n", "Room Type", "Rate Per Room", "Number Of Available Rooms");
+            System.out.println("-------------------------------------------------------------------------------------");
 
-            try {
-                BigDecimal amount = paymentSessionBean.calculatePaymentForReservationClient(rt.getName(), startDate, endDate, numberOfRooms);
-                System.out.println(rt.getName() + " (Total Amount :$" + amount + ")");
-            } catch (RoomTypeNotFoundException | RoomRateNotFoundException ex) {
+            for (RoomTypeAvailability rta : availableRoomTypes) {
+                try {
+                    RoomType roomType = rta.getRoomType();
+                    int numberOfAvailableRooms = rta.getAvailableRooms();
+                    BigDecimal totalCost = paymentSessionBean.calculatePaymentForManagementClient(roomType.getName(), startDate, endDate, numberOfRooms);
+                    System.out.printf("%-20s%-15s-%25s\n", roomType.getName(), totalCost, rta.getAvailableRooms());
+                } catch (RoomRateNotFoundException ex) {
+                }
             }
         }
+        System.out.println("Enter the number of rooms required: ");
+        int number = sc.nextInt();
+        sc.nextLine();
         System.out.println("Please input the name of the RoomType that you have chosen");
         String chosenRoomType = sc.nextLine();
-        Reservation newReservation = reservationSessionBean.createReservation(customerId, chosenRoomType, startDate, endDate, numberOfRooms,
-                paymentSessionBean.calculatePaymentForReservationClient(chosenRoomType, startDate, endDate, numberOfRooms)); //idk how to store the chosen amount, so ill jus recalculate the chosen one
+        Reservation newReservation = reservationSessionBean.createNewReservation(customerId, chosenRoomType, startDate, endDate, number,
+                paymentSessionBean.calculatePaymentForReservationClient(chosenRoomType, startDate, endDate, 0).multiply(BigDecimal.valueOf(number))); //idk how to store the chosen amount, so ill jus recalculate the chosen one
         if (isSameDay(startDate, new Date()) && isAfter2AM(new Date())) {
             System.out.println("Allocating rooms immediately as it is a same-day check-in after 2 a.m.");
             roomAllocationSessionBean.allocateRoomsForDate(startDate);

@@ -4,6 +4,7 @@
  */
 package ejb.session.stateless;
 
+import HelperClass.RoomTypeAvailability;
 import entity.Guest;
 import entity.Reservation;
 import entity.RoomType;
@@ -26,5 +27,9 @@ public interface ReservationSessionBeanRemote {
     public List<RoomType> retrieveListOfAvailableRoomType(Date startDate, Date endDate, int numberOfRooms) throws ReservationUnavailableException, RoomTypeNotFoundException;
 
     public Reservation createReservation(Long guestId, String name, Date checkInDate, Date checkOutDate, int numberOfRooms, BigDecimal totalAmount);
+
+    public Reservation createNewReservation(Long guestId, String roomTypeName, Date checkInDate, Date checkOutDate, int numberOfRooms, BigDecimal totalAmount) throws RoomTypeNotFoundException;
+
+    public List<RoomTypeAvailability> retrieveRoomTypeAvailability(Date startDate, Date endDate) throws RoomTypeNotFoundException;
     
 }

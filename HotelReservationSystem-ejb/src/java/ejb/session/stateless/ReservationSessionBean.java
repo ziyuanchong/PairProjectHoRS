@@ -4,6 +4,7 @@
  */
 package ejb.session.stateless;
 
+import HelperClass.RoomTypeAvailability;
 import entity.Guest;
 import entity.Reservation;
 import entity.Room;
@@ -82,7 +83,7 @@ public class ReservationSessionBean implements ReservationSessionBeanRemote, Res
         } else {
             throw new RoomTypeNotFoundException("There are no room types currently");
         }
-    }   
+    }
 
     public Reservation createReservation(Long guestId, String name, Date checkInDate, Date checkOutDate, int numberOfRooms, BigDecimal totalAmount) {
         Guest guest = em.find(Guest.class, guestId);
@@ -104,5 +105,79 @@ public class ReservationSessionBean implements ReservationSessionBeanRemote, Res
     }
 
 // Method to find RoomRates based on the date range
-    
+    public List<RoomTypeAvailability> retrieveRoomTypeAvailability(Date startDate, Date endDate) throws RoomTypeNotFoundException {
+        // Fetch all RoomTypes
+        List<RoomType> listOfRoomTypes = em.createQuery("SELECT rt FROM RoomType rt", RoomType.class).getResultList();
+
+        if (listOfRoomTypes == null || listOfRoomTypes.isEmpty()) {
+            throw new RoomTypeNotFoundException("There are no room types currently.");
+        }
+
+        List<RoomTypeAvailability> roomTypeAvailabilityList = new ArrayList<>();
+
+        for (RoomType rt : listOfRoomTypes) {
+            // Calculate overlapping reservations
+            List<Reservation> overlapReservations = em.createQuery(
+                    "SELECT r FROM Reservation r WHERE r.startDate < :endDate AND r.endDate > :startDate AND r.roomType = :roomType",
+                    Reservation.class)
+                    .setParameter("startDate", startDate)
+                    .setParameter("endDate", endDate)
+                    .setParameter("roomType", rt)
+                    .getResultList();
+
+            // Calculate total rooms in use during the given period
+            int roomsInUse = overlapReservations.stream().mapToInt(Reservation::getNumberOfRooms).sum();
+
+            // Calculate total available rooms
+            int totalRooms = (int) rt.getRooms().stream().filter(Room::getIsAvailable).count();
+            int availableRooms = Math.max(totalRooms - roomsInUse, 0);
+
+            // Add room type and availability information to the list
+            RoomTypeAvailability availability = new RoomTypeAvailability(rt, availableRooms);
+            roomTypeAvailabilityList.add(availability);
+        }
+
+        return roomTypeAvailabilityList;
+    }
+
+    public Reservation createNewReservation(Long guestId, String roomTypeName, Date checkInDate, Date checkOutDate, int numberOfRooms, BigDecimal totalAmount) throws RoomTypeNotFoundException {
+        // Find the guest entity by ID
+        Guest guest = em.find(Guest.class, guestId);
+        // Retrieve all room types with availability information
+        List<RoomTypeAvailability> roomTypeAvailabilities = retrieveRoomTypeAvailability(checkInDate, checkOutDate);
+
+        // Find the specific room type by name and check availability
+        RoomType selectedRoomType = null;
+        for (RoomTypeAvailability availability : roomTypeAvailabilities) {
+            if (availability.getRoomType().getName().equals(roomTypeName)) {
+                if (availability.getAvailableRooms() >= numberOfRooms) {
+                    selectedRoomType = availability.getRoomType();
+                    break;
+                } else {
+                    throw new RoomTypeNotFoundException("Not enough rooms available for room type: " + roomTypeName);
+                }
+            }
+        }
+
+        // Throw exception if room type not found
+        if (selectedRoomType == null) {
+            throw new RoomTypeNotFoundException("Room type not found: " + roomTypeName);
+        }
+
+        // Create the reservation
+        Reservation reservation = new Reservation(checkInDate, checkOutDate, numberOfRooms, totalAmount);
+        reservation.setGuest(guest);
+        reservation.setRoomType(selectedRoomType);
+
+        // Find applicable room rates for the reservation period
+        List<RoomRate> applicableRates = paymentSessionBean.findApplicableRoomRatesForPeriod(selectedRoomType, checkInDate, checkOutDate);
+        reservation.setApplicableRoomRates(applicableRates);
+
+        // Persist the reservation
+        em.persist(reservation);
+        em.flush();
+
+        return reservation;
+    }
+
 }

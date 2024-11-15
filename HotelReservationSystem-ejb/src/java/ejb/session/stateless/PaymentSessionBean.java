@@ -39,7 +39,7 @@ public class PaymentSessionBean implements PaymentSessionBeanRemote, PaymentSess
         if (rt == null) {
             throw new RoomTypeNotFoundException("There is no such roomtype");
         } else {
-            while (!calendar.getTime().after(endDate)) { // check if calendar is past the enddate of reservation, if not continue
+            while (!calendar.getTime().equals(endDate)) { // check if calendar is past the enddate of reservation, if not continue
                 Date currentDate = calendar.getTime();
                 RoomRate applicableRate = findRoomRate(rt.getRoomRates(), currentDate);
                 if (applicableRate != null) {
@@ -50,8 +50,7 @@ public class PaymentSessionBean implements PaymentSessionBeanRemote, PaymentSess
                 calendar.add(Calendar.DAY_OF_MONTH, 1); //Go to next day 
             }
         }
-        BigDecimal bigDecimalValue = new BigDecimal(numberOfRooms);
-        return bigDecimalValue.multiply(totalAmount);
+        return totalAmount;
     }
 
     private RoomRate findRoomRate(List<RoomRate> roomRates, Date date) {
@@ -95,12 +94,11 @@ public class PaymentSessionBean implements PaymentSessionBeanRemote, PaymentSess
         if (applicableRoomRate == null) {
             throw new RoomRateNotFoundException("No Room Rate is provided for the listed dates");
         } else {
-            while (!calendar.getTime().after(endDate)) {
+            while (!calendar.getTime().equals(endDate)) {
                 totalAmount = totalAmount.add(applicableRoomRate.getRatePerNight());
                 calendar.add(Calendar.DAY_OF_MONTH, 1);
             }
-            BigDecimal bigDecimalValue = new BigDecimal(numberOfRooms);
-            return bigDecimalValue.multiply(totalAmount);
+            return totalAmount;
         }
     }
 
