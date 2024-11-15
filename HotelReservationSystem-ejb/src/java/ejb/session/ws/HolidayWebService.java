@@ -5,6 +5,7 @@
 package ejb.session.ws;
 
 import ejb.session.stateless.PartnerSessionBeanLocal;
+import ejb.session.stateless.PaymentSessionBeanLocal;
 import entity.Guest;
 import entity.Partner;
 import entity.Reservation;
@@ -15,7 +16,9 @@ import exception.InvalidPartnerInfoException;
 import exception.PartnerNotFoundException;
 import exception.ReservationNotFoundException;
 import exception.ReservationUnavailableException;
+import exception.RoomRateNotFoundException;
 import exception.RoomTypeNotFoundException;
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -35,6 +38,9 @@ import javax.persistence.PersistenceContext;
 @WebService(serviceName = "HolidayWebService", targetNamespace = "http://ws.session.ejb/")
 @Stateless()
 public class HolidayWebService {
+
+    @EJB
+    private PaymentSessionBeanLocal paymentSessionBean;
 
     @PersistenceContext(unitName = "HotelReservationSystem-ejbPU")
     private EntityManager em;
@@ -300,5 +306,58 @@ public class HolidayWebService {
         }
 
         return reservations;
+    }
+
+    @WebMethod(operationName = "calculateTotalCost")
+    public BigDecimal calculateTotalCost(
+            @WebParam(name = "roomTypeName") String roomTypeName,
+            @WebParam(name = "startDate") String startDate,
+            @WebParam(name = "endDate") String endDate,
+            @WebParam(name = "numberOfRooms") int numberOfRooms)
+            throws RoomTypeNotFoundException, ReservationUnavailableException {
+
+        // Validate input
+        if (roomTypeName == null || roomTypeName.trim().isEmpty()) {
+            throw new ReservationUnavailableException("Room type name cannot be null or empty.");
+        }
+        if (startDate == null || endDate == null) {
+            throw new ReservationUnavailableException("Start date and end date cannot be null.");
+        }
+        if (numberOfRooms <= 0) {
+            throw new ReservationUnavailableException("Number of rooms must be greater than 0.");
+        }
+
+        try {
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+            Date parsedStartDate = formatter.parse(startDate);
+            Date parsedEndDate = formatter.parse(endDate);
+
+            if (parsedStartDate.after(parsedEndDate)) {
+                throw new ReservationUnavailableException("Start date cannot be after end date.");
+            }
+
+            // Calculate total cost using the payment session bean
+            BigDecimal totalCost = paymentSessionBean.calculatePaymentForReservationClient(
+                    roomTypeName, parsedStartDate, parsedEndDate, numberOfRooms);
+
+            // Detach any related entities if needed (this method does not return entities)
+            RoomType roomType = em.createQuery("SELECT rt FROM RoomType rt WHERE rt.name = :name", RoomType.class)
+                    .setParameter("name", roomTypeName)
+                    .getSingleResult();
+            em.detach(roomType);
+            roomType.setRooms(null);
+            roomType.setReservations(null);
+            roomType.getRoomRates().forEach(rate -> {
+                em.detach(rate);
+                rate.setRoomType(null);
+            });
+
+            return totalCost;
+
+        } catch (ParseException exe) {
+            throw new ReservationUnavailableException("Invalid date format. Please use 'yyyy-MM-dd'.");
+        } catch (RoomTypeNotFoundException | RoomRateNotFoundException ex) {
+            throw new RoomTypeNotFoundException("Room Type not found: " + roomTypeName);
+        }
     }
 }

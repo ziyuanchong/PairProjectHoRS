@@ -4,6 +4,12 @@
 <xsd:import namespace="http://ws.session.ejb/" schemaLocation="http://localhost:8080/HolidayWebService/HolidayWebService?xsd=1"/>
 </xsd:schema>
 </types>
+<message name="viewAllPartnerReservations">
+<part name="parameters" element="tns:viewAllPartnerReservations"/>
+</message>
+<message name="viewAllPartnerReservationsResponse">
+<part name="parameters" element="tns:viewAllPartnerReservationsResponse"/>
+</message>
 <message name="loginPartner">
 <part name="parameters" element="tns:loginPartner"/>
 </message>
@@ -43,13 +49,17 @@
 <message name="ReservationNotFoundException">
 <part name="fault" element="tns:ReservationNotFoundException"/>
 </message>
-<message name="viewAllPartnerReservations">
-<part name="parameters" element="tns:viewAllPartnerReservations"/>
+<message name="calculateTotalCost">
+<part name="parameters" element="tns:calculateTotalCost"/>
 </message>
-<message name="viewAllPartnerReservationsResponse">
-<part name="parameters" element="tns:viewAllPartnerReservationsResponse"/>
+<message name="calculateTotalCostResponse">
+<part name="parameters" element="tns:calculateTotalCostResponse"/>
 </message>
 <portType name="HolidayWebService">
+<operation name="viewAllPartnerReservations">
+<input wsam:Action="http://ws.session.ejb/HolidayWebService/viewAllPartnerReservationsRequest" message="tns:viewAllPartnerReservations"/>
+<output wsam:Action="http://ws.session.ejb/HolidayWebService/viewAllPartnerReservationsResponse" message="tns:viewAllPartnerReservationsResponse"/>
+</operation>
 <operation name="loginPartner">
 <input wsam:Action="http://ws.session.ejb/HolidayWebService/loginPartnerRequest" message="tns:loginPartner"/>
 <output wsam:Action="http://ws.session.ejb/HolidayWebService/loginPartnerResponse" message="tns:loginPartnerResponse"/>
@@ -72,13 +82,24 @@
 <output wsam:Action="http://ws.session.ejb/HolidayWebService/viewPartnerReservationResponse" message="tns:viewPartnerReservationResponse"/>
 <fault message="tns:ReservationNotFoundException" name="ReservationNotFoundException" wsam:Action="http://ws.session.ejb/HolidayWebService/viewPartnerReservation/Fault/ReservationNotFoundException"/>
 </operation>
-<operation name="viewAllPartnerReservations">
-<input wsam:Action="http://ws.session.ejb/HolidayWebService/viewAllPartnerReservationsRequest" message="tns:viewAllPartnerReservations"/>
-<output wsam:Action="http://ws.session.ejb/HolidayWebService/viewAllPartnerReservationsResponse" message="tns:viewAllPartnerReservationsResponse"/>
+<operation name="calculateTotalCost">
+<input wsam:Action="http://ws.session.ejb/HolidayWebService/calculateTotalCostRequest" message="tns:calculateTotalCost"/>
+<output wsam:Action="http://ws.session.ejb/HolidayWebService/calculateTotalCostResponse" message="tns:calculateTotalCostResponse"/>
+<fault message="tns:RoomTypeNotFoundException" name="RoomTypeNotFoundException" wsam:Action="http://ws.session.ejb/HolidayWebService/calculateTotalCost/Fault/RoomTypeNotFoundException"/>
+<fault message="tns:ReservationUnavailableException" name="ReservationUnavailableException" wsam:Action="http://ws.session.ejb/HolidayWebService/calculateTotalCost/Fault/ReservationUnavailableException"/>
 </operation>
 </portType>
 <binding name="HolidayWebServicePortBinding" type="tns:HolidayWebService">
 <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+<operation name="viewAllPartnerReservations">
+<soap:operation soapAction=""/>
+<input>
+<soap:body use="literal"/>
+</input>
+<output>
+<soap:body use="literal"/>
+</output>
+</operation>
 <operation name="loginPartner">
 <soap:operation soapAction=""/>
 <input>
@@ -133,7 +154,7 @@
 <soap:fault name="ReservationNotFoundException" use="literal"/>
 </fault>
 </operation>
-<operation name="viewAllPartnerReservations">
+<operation name="calculateTotalCost">
 <soap:operation soapAction=""/>
 <input>
 <soap:body use="literal"/>
@@ -141,6 +162,12 @@
 <output>
 <soap:body use="literal"/>
 </output>
+<fault name="RoomTypeNotFoundException">
+<soap:fault name="RoomTypeNotFoundException" use="literal"/>
+</fault>
+<fault name="ReservationUnavailableException">
+<soap:fault name="ReservationUnavailableException" use="literal"/>
+</fault>
 </operation>
 </binding>
 <service name="HolidayWebService">

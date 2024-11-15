@@ -4,8 +4,7 @@
  */
 package hotelreservationsystemclient;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Scanner;
 import ws.holiday.HolidayWebService_Service;
@@ -22,13 +21,10 @@ import ws.holiday.RoomTypeNotFoundException_Exception;
  */
 public class Main {
 
-
     /**
      * @param args the command line arguments
      */
-   
-        // TODO code application logic here
-        
+    // TODO code application logic here
     private static Partner currentPartner;
     private static HolidayWebService_Service service = new HolidayWebService_Service();
     private static Scanner sc = new Scanner(System.in);
@@ -119,9 +115,6 @@ public class Main {
             int numberOfRooms = sc.nextInt();
             sc.nextLine(); // consume newline
 
-            Date checkInDate = new SimpleDateFormat("yyyy-MM-dd").parse(checkInDateStr);
-            Date checkOutDate = new SimpleDateFormat("yyyy-MM-dd").parse(checkOutDateStr);
-
             List<RoomType> availableRoomTypes = service.getHolidayWebServicePort()
                     .searchAvailableRoomTypes(checkInDateStr, checkOutDateStr, numberOfRooms);
 
@@ -129,7 +122,12 @@ public class Main {
                 System.out.println("No available rooms found.");
             } else {
                 System.out.println("Available Room Types:");
-                availableRoomTypes.forEach(roomType -> System.out.println("Room Type: " + roomType.getName()));
+                for (RoomType roomType : availableRoomTypes) {
+                    BigDecimal totalCost = service.getHolidayWebServicePort().calculateTotalCost(
+                            roomType.getName(), checkInDateStr, checkOutDateStr, numberOfRooms);
+
+                    System.out.println("Room Type: " + roomType.getName() + ", Total Cost: " + totalCost);
+                }
             }
         } catch (Exception e) {
             System.out.println("Error occurred: " + e.getMessage());

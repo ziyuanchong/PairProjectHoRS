@@ -63,10 +63,14 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
                 .setParameter("checkInDate", checkInDate)
                 .getResultList();
 
-        System.out.println("Found " + reservationsForDate.size() + " reservations for date: " + checkInDate);
-
         reservationsForDate.forEach(reservation -> {
             System.out.println("Processing reservation ID: " + reservation.getReservationId());
+
+            // Check if the reservation already has allocated rooms
+            if (!reservation.getReservationRooms().isEmpty()) {
+                System.out.println("Rooms already allocated for reservation ID: " + reservation.getReservationId());
+                return; // Skip this reservation
+            }
 
             for (int i = 0; i < reservation.getNumberOfRooms(); i++) {
                 System.out.println("Allocating room " + (i + 1) + " for reservation ID: " + reservation.getReservationId());
@@ -123,7 +127,6 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
             }
         });
 
-        System.out.println("Finished allocateRoomsForDate with exception reports count: " + exceptionReports.size());
         return exceptionReports;
     }
 

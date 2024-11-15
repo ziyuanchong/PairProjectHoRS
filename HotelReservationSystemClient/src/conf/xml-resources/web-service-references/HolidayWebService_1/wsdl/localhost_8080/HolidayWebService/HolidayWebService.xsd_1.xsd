@@ -10,6 +10,10 @@
 
 <xs:element name="RoomTypeNotFoundException" type="tns:RoomTypeNotFoundException"/>
 
+<xs:element name="calculateTotalCost" type="tns:calculateTotalCost"/>
+
+<xs:element name="calculateTotalCostResponse" type="tns:calculateTotalCostResponse"/>
+
 <xs:element name="loginPartner" type="tns:loginPartner"/>
 
 <xs:element name="loginPartnerResponse" type="tns:loginPartnerResponse"/>
@@ -105,7 +109,6 @@
 
 <xs:complexType name="partner">
 <xs:sequence>
-<xs:element name="loggedIn" type="xs:boolean"/>
 <xs:element name="partnerId" type="xs:long" minOccurs="0"/>
 <xs:element name="partnerName" type="xs:string" minOccurs="0"/>
 <xs:element name="password" type="xs:string" minOccurs="0"/>
@@ -150,6 +153,27 @@
 </xs:sequence>
 </xs:complexType>
 
+<xs:complexType name="calculateTotalCost">
+<xs:sequence>
+<xs:element name="roomTypeName" type="xs:string" minOccurs="0"/>
+<xs:element name="startDate" type="xs:string" minOccurs="0"/>
+<xs:element name="endDate" type="xs:string" minOccurs="0"/>
+<xs:element name="numberOfRooms" type="xs:int"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="calculateTotalCostResponse">
+<xs:sequence>
+<xs:element name="return" type="xs:decimal" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="RoomTypeNotFoundException">
+<xs:sequence>
+<xs:element name="message" type="xs:string" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
 <xs:complexType name="viewPartnerReservation">
 <xs:sequence>
 <xs:element name="reservationId" type="xs:long" minOccurs="0"/>
@@ -184,15 +208,21 @@
 </xs:sequence>
 </xs:complexType>
 
-<xs:complexType name="RoomTypeNotFoundException">
+<xs:complexType name="PartnerNotFoundException">
 <xs:sequence>
 <xs:element name="message" type="xs:string" minOccurs="0"/>
 </xs:sequence>
 </xs:complexType>
 
-<xs:complexType name="PartnerNotFoundException">
+<xs:complexType name="viewAllPartnerReservations">
 <xs:sequence>
-<xs:element name="message" type="xs:string" minOccurs="0"/>
+<xs:element name="username" type="xs:string" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="viewAllPartnerReservationsResponse">
+<xs:sequence>
+<xs:element name="return" type="tns:reservation" minOccurs="0" maxOccurs="unbounded"/>
 </xs:sequence>
 </xs:complexType>
 
@@ -212,18 +242,6 @@
 <xs:complexType name="InvalidPartnerInfoException">
 <xs:sequence>
 <xs:element name="message" type="xs:string" minOccurs="0"/>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="viewAllPartnerReservations">
-<xs:sequence>
-<xs:element name="username" type="xs:string" minOccurs="0"/>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="viewAllPartnerReservationsResponse">
-<xs:sequence>
-<xs:element name="return" type="tns:reservation" minOccurs="0" maxOccurs="unbounded"/>
 </xs:sequence>
 </xs:complexType>
 

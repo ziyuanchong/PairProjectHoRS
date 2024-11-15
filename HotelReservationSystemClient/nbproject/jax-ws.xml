@@ -2,7 +2,7 @@
 <jax-ws xmlns="http://www.netbeans.org/ns/jax-ws/1">
   <services/>
   <clients>
-    <client name="HolidayWebService">
+    <client name="HolidayWebService_1">
       <wsdl-url>http://localhost:8080/HolidayWebService/HolidayWebService?wsdl</wsdl-url>
       <local-wsdl-file>localhost_8080/HolidayWebService/HolidayWebService.wsdl</local-wsdl-file>
       <package-name forceReplace="true">ws.holiday</package-name>
