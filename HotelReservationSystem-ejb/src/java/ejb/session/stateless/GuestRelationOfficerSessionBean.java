@@ -5,6 +5,7 @@
 package ejb.session.stateless;
 
 import Enum.AllocationExceptionTypeEnum;
+import HelperClass.RoomTypeAvailability;
 import entity.ExceptionAllocationReport;
 import entity.Guest;
 import entity.Reservation;
@@ -23,6 +24,8 @@ import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
@@ -62,6 +65,14 @@ public class GuestRelationOfficerSessionBean implements GuestRelationOfficerSess
         }
     }
 
+    public List<RoomTypeAvailability> searchAvailableRoomTypes(Date checkInDate, Date checkOutDate) throws ReservationUnavailableException, RoomTypeNotFoundException {
+        try {
+            return reservationSessionBeanLocal.retrieveRoomTypeAvailability(checkInDate, checkOutDate);
+        } catch (RoomTypeNotFoundException ex) {
+            throw new RoomTypeNotFoundException("There are no available rooms");
+        }
+    }
+
     public Guest createNewGuest(String firstName, String lastName, String phoneNumber, String email) {
         Guest guest = new Guest(firstName, lastName, phoneNumber, email);
         em.persist(guest);
@@ -86,9 +97,17 @@ public class GuestRelationOfficerSessionBean implements GuestRelationOfficerSess
         Reservation reservation = reservationSessionBean.createReservation(guestId, name, checkInDate, checkOutDate, numberOfRooms, totalAmount);
 
         // Check if it's a same-day check-in after 2 a.m.
-     
-
         return reservation;
+    }
+
+    public Reservation walkInReserveRoomTWO(Long guestId, String name, Date checkInDate, Date checkOutDate, int numberOfRooms, BigDecimal totalAmount) throws RoomNotAvailableException {
+        try {
+            // Attempt to create a new reservation
+            return reservationSessionBean.createNewReservation(guestId, name, checkInDate, checkOutDate, numberOfRooms, totalAmount);
+        } catch (RoomTypeNotFoundException ex) {
+            // Throw a custom exception to indicate room unavailability to the caller
+            throw new RoomNotAvailableException("Room type '" + name + "' is not available for the specified dates.");
+        }
     }
 
 // Helper methods for date comparison
