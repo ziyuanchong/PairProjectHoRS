@@ -126,7 +126,7 @@ public class Main {
                     BigDecimal totalCost = service.getHolidayWebServicePort().calculateTotalCost(
                             roomType.getName(), checkInDateStr, checkOutDateStr, numberOfRooms);
 
-                    System.out.println("Room Type: " + roomType.getName() + ", Total Cost: " + totalCost);
+                    System.out.println("Room Type: " + roomType.getName() + ", Cost per room: " + totalCost);
                 }
             }
         } catch (Exception e) {

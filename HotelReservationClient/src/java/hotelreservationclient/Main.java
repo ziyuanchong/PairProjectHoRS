@@ -101,7 +101,7 @@ public class Main {
                                         try {
                                             RoomType roomType = rta.getRoomType();
                                             int numberOfAvailableRooms = rta.getAvailableRooms();
-                                            BigDecimal totalCost = paymentSessionBean.calculatePaymentForManagementClient(roomType.getName(), checkInDate, checkOutDate, 0);
+                                            BigDecimal totalCost = paymentSessionBean.calculatePaymentForReservationClient(roomType.getName(), checkInDate, checkOutDate, 0);
                                             System.out.printf("%-20s%-15s%-25s\n", roomType.getName(), totalCost, rta.getAvailableRooms());
                                         } catch (RoomRateNotFoundException ex) {
                                         }
@@ -210,7 +210,7 @@ public class Main {
                             try {
                                 RoomType roomType = rta.getRoomType();
                                 int numberOfAvailableRooms = rta.getAvailableRooms();
-                                BigDecimal totalCost = paymentSessionBean.calculatePaymentForManagementClient(roomType.getName(), checkInDate, checkOutDate, 0);
+                                BigDecimal totalCost = paymentSessionBean.calculatePaymentForReservationClient(roomType.getName(), checkInDate, checkOutDate, 0);
                                 System.out.printf("%-20s%-15s%-25s\n", roomType.getName(), totalCost, rta.getAvailableRooms());
                             } catch (RoomRateNotFoundException ex) {
                             }
@@ -243,7 +243,7 @@ public class Main {
                 try {
                     RoomType roomType = rta.getRoomType();
                     int numberOfAvailableRooms = rta.getAvailableRooms();
-                    BigDecimal totalCost = paymentSessionBean.calculatePaymentForManagementClient(roomType.getName(), startDate, endDate, numberOfRooms);
+                    BigDecimal totalCost = paymentSessionBean.calculatePaymentForReservationClient(roomType.getName(), startDate, endDate, numberOfRooms);
                     System.out.printf("%-20s%-15s-%25s\n", roomType.getName(), totalCost, rta.getAvailableRooms());
                 } catch (RoomRateNotFoundException ex) {
                 }

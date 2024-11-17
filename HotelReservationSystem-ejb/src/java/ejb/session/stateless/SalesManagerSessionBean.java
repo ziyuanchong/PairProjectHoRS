@@ -40,6 +40,8 @@ public class SalesManagerSessionBean implements SalesManagerSessionBeanRemote, S
 
         RoomRate newRoomRate = new RoomRate(name, rateType, ratePerNight, startDate, endDate, roomType);
         em.persist(newRoomRate);
+        
+        roomType.getRoomRates().add(newRoomRate);
         return newRoomRate;
     }
 

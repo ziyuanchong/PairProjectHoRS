@@ -65,6 +65,7 @@ public class ReservationSessionBean implements ReservationSessionBeanRemote, Res
     }
 
     public List<RoomType> retrieveListOfAvailableRoomType(Date startDate, Date endDate, int numberOfRooms) throws ReservationUnavailableException, RoomTypeNotFoundException { //checks all the roomtypes for those that can accomodate
+        em.clear();
         List<RoomType> listOfRoomTypes = em.createQuery("SELECT rt FROM RoomType rt", RoomType.class).getResultList();
         if (listOfRoomTypes != null) { //check if there are at least 1 roomtype
             List<RoomType> listOfAvailableRoomTypes = new ArrayList<>();
